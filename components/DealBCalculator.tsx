@@ -90,7 +90,7 @@ export default function DealBCalculator() {
           max="25"
           step="5"
           value={mwShare}
-          onChange={(e) => setMwShare(parseInt(e.target.value)))}
+          onChange={(e) => setMwShare(parseInt(e.target.value))}
           className="w-full"
         />
       </div>
