@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, User, LogIn } from "lucide-react";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -46,9 +47,11 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-hearst-dark/30"></div>
       
       <div className="flex flex-col items-center relative z-10 mt-[100px]">
-        <img
+        <Image
           src="/Logo.svg"
           alt="HEARST Solutions"
+          width={300}
+          height={300}
           className="h-[300px] w-auto object-contain -mt-[20px]"
         />
 
@@ -64,7 +67,7 @@ export default function LoginPage() {
               {/* Username */}
               <div>
                 <label className="block text-sm font-bold text-hearst-text-secondary mb-3 uppercase tracking-wide">
-                  Nom d'utilisateur
+                  Nom d&apos;utilisateur
                 </label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
