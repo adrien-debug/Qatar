@@ -11,8 +11,12 @@ import {
   calculateCAPEX,
   defaultHardwareCosts,
 } from "@/lib/financial-calculations";
-import InputPanel from "./InputPanel";
-import PhaseSelector from "./PhaseSelector";
+import InputPanel from "@/components/InputPanel";
+import PhaseSelector from "@/components/PhaseSelector";
+import CalculationNotes from "@/components/CalculationNotes";
+import SectionHeader from "@/components/SectionHeader";
+import Card from "@/components/Card";
+import Button from "@/components/Button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export default function DealACalculator() {
@@ -47,10 +51,11 @@ export default function DealACalculator() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-black text-white p-8 rounded-lg">
-        <h2 className="text-3xl font-bold mb-2">Deal Model A</h2>
-        <p className="text-gray-300">Revenue-Based Share on Bitcoin Generated</p>
-      </div>
+      <SectionHeader
+        title="Deal Model A"
+        subtitle="Revenue-Based Share on Bitcoin Generated"
+        variant="dark"
+      />
 
       <PhaseSelector
         phases={defaultPhases}
@@ -60,23 +65,20 @@ export default function DealACalculator() {
 
       <InputPanel miningParams={miningParams} onParamsChange={(p) => setMiningParams({ ...miningParams, ...p })} />
 
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <Card>
+        <label className="block text-sm font-medium text-gray-700 mb-4">
           Revenue Share Percentage
         </label>
         <div className="flex gap-2 mb-4">
           {shareOptions.map((option) => (
-            <button
+            <Button
               key={option}
               onClick={() => setRevenueShare(option)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                revenueShare === option
-                  ? "bg-hearst-green text-black"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+              active={revenueShare === option}
+              variant="secondary"
             >
               {option}%
-            </button>
+            </Button>
           ))}
         </div>
         <input
@@ -88,10 +90,10 @@ export default function DealACalculator() {
           onChange={(e) => setRevenueShare(parseInt(e.target.value))}
           className="w-full"
         />
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <Card>
           <h3 className="text-lg font-semibold mb-4 text-hearst-text">HEARST Revenue</h3>
           <div className="space-y-3">
             <div>
@@ -113,9 +115,9 @@ export default function DealACalculator() {
               </div>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <Card>
           <h3 className="text-lg font-semibold mb-4 text-hearst-text">Qatar Revenue</h3>
           <div className="space-y-3">
             <div>
@@ -137,15 +139,15 @@ export default function DealACalculator() {
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+      <Card>
         <h3 className="text-lg font-semibold mb-4 text-hearst-text">Détails de Production</h3>
         <div className="grid grid-cols-3 gap-4">
           <div>
             <div className="text-sm text-gray-600">BTC Mensuel</div>
-            <div className="text-xl font-semibold">{result.monthlyBTC.toFixed(2)} BTC</div>
+            <div className="text-xl font-semibold">{result.totalMonthlyBTC.toFixed(2)} BTC</div>
           </div>
           <div>
             <div className="text-sm text-gray-600">Revenue Total Mensuel</div>
@@ -160,9 +162,9 @@ export default function DealACalculator() {
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+      <Card>
         <h3 className="text-lg font-semibold mb-4 text-hearst-text">
           Comparaison par Revenue Share
         </h3>
@@ -177,7 +179,9 @@ export default function DealACalculator() {
             <Bar dataKey="qatar" fill="#1A1A1A" name="Qatar" />
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </Card>
+
+      <CalculationNotes dealType="A" />
     </div>
   );
 }

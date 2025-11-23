@@ -1,75 +1,92 @@
 import Navigation from "@/components/Navigation";
-import ComparisonTable from "@/components/ComparisonTable";
-import { defaultMiningParams, defaultPhases } from "@/lib/financial-calculations";
+import SectionHeader from "@/components/SectionHeader";
+import Card from "@/components/Card";
 import Link from "next/link";
+import { BarChart3, ArrowRight, Check } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-hearst-light">
+    <div className="min-h-screen bg-hearst-dark">
       <Navigation />
-      <main className="max-w-7xl mx-auto px-8 py-12">
-        <div className="mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-hearst-text">
-            Qatar Financial Simulator
-          </h1>
-          <p className="text-xl text-gray-600">
-            Dynamic financial modeling platform for Bitcoin mining partnership
-          </p>
-        </div>
+      <main className="max-w-7xl mx-auto px-6 md:px-8 py-16">
+        {/* Header Premium avec style PowerPoint */}
+        <SectionHeader
+          title="Qatar Financial Simulator"
+          subtitle="Dynamic financial modeling platform for Bitcoin mining partnership"
+          variant="dark"
+          size="large"
+        />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          <Link href="/deal-a" className="bg-white rounded-lg p-8 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 bg-hearst-green rounded-lg flex items-center justify-center text-2xl font-bold">
-                A
+        {/* CTA vers Projection - Premium */}
+        <div className="mb-16">
+          <Link href="/projection">
+            <Card className="border-2 border-hearst-green/40 cursor-pointer">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-6 mb-6">
+                    <div className="w-20 h-20 bg-hearst-green rounded-2xl flex items-center justify-center shadow-xl">
+                      <BarChart3 className="w-10 h-10 text-hearst-dark" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-4xl font-bold text-white mb-3 tracking-tight">Projection Financière</h2>
+                      <p className="text-hearst-text-secondary text-xl leading-relaxed">
+                        Configurez votre deal et visualisez les projections sur 5 ans avec des graphiques interactifs
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 text-hearst-green font-bold text-xl">
+                    Accéder au simulateur
+                    <ArrowRight className="w-6 h-6" strokeWidth={2.5} />
+                  </div>
+                </div>
               </div>
-              <h2 className="text-2xl font-semibold">Deal Model A</h2>
-            </div>
-            <p className="text-gray-600 mb-4">
-              Revenue-based share on Bitcoin generated. HEARST receives a percentage of mining revenue.
-            </p>
-            <div className="text-sm text-hearst-green font-medium">Explore Model A →</div>
-          </Link>
-
-          <Link href="/deal-b" className="bg-white rounded-lg p-8 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center text-2xl font-bold text-hearst-green">
-                B
-              </div>
-              <h2 className="text-2xl font-semibold">Deal Model B</h2>
-            </div>
-            <p className="text-gray-600 mb-4">
-              Megawatt allocation with zero-cost electricity. HEARST receives capacity allocation for own operations.
-            </p>
-            <div className="text-sm text-hearst-green font-medium">Explore Model B →</div>
+            </Card>
           </Link>
         </div>
 
-        <div className="mb-12">
-          <h2 className="text-3xl font-bold mb-6 text-hearst-text">Quick Comparison</h2>
-          <ComparisonTable />
-        </div>
+        {/* Informations Premium */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card className="p-10">
+            <h3 className="text-3xl font-bold mb-8 text-white tracking-tight">Deal Models</h3>
+            <div className="space-y-6">
+              <div className="border-l-4 border-hearst-green pl-6">
+                <h4 className="font-bold text-xl mb-3 text-white">Type Share Revenu</h4>
+                <p className="text-hearst-text-secondary text-lg leading-relaxed">
+                  HEARST reçoit un pourcentage du revenu Bitcoin généré. Modèle simple et transparent.
+                </p>
+              </div>
+              <div className="border-l-4 border-hearst-text pl-6">
+                <h4 className="font-bold text-xl mb-3 text-white">Type MW Allocated</h4>
+                <p className="text-hearst-text-secondary text-lg leading-relaxed">
+                  HEARST reçoit une allocation de MW avec électricité à zéro coût. Modèle durable et aligné.
+                </p>
+              </div>
+            </div>
+          </Card>
 
-        <div className="bg-black text-white rounded-lg p-8">
-          <h2 className="text-2xl font-bold mb-4">Key Assumptions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <div className="text-hearst-green font-semibold mb-2">Phased Deployment</div>
-              <div className="text-gray-300">25MW → 100MW → 200MW</div>
-            </div>
-            <div>
-              <div className="text-hearst-green font-semibold mb-2">Energy Cost</div>
-              <div className="text-gray-300">2.5 ¢/kWh (Qatar rate)</div>
-            </div>
-            <div>
-              <div className="text-hearst-green font-semibold mb-2">BTC Price</div>
-              <div className="text-gray-300">${defaultMiningParams.btcPrice.toLocaleString()}</div>
-            </div>
-          </div>
+          <Card className="p-10">
+            <h3 className="text-3xl font-bold mb-8 text-white tracking-tight">Project Features</h3>
+            <ul className="space-y-5">
+              <li className="flex items-start gap-4">
+                <Check className="w-6 h-6 text-hearst-green mt-1 flex-shrink-0" strokeWidth={3} />
+                <span className="text-hearst-text-secondary text-lg leading-relaxed">Simulateur financier dynamique avec calculs en temps réel</span>
+              </li>
+              <li className="flex items-start gap-4">
+                <Check className="w-6 h-6 text-hearst-green mt-1 flex-shrink-0" strokeWidth={3} />
+                <span className="text-hearst-text-secondary text-lg leading-relaxed">Projections sur 5 ans avec graphiques interactifs</span>
+              </li>
+              <li className="flex items-start gap-4">
+                <Check className="w-6 h-6 text-hearst-green mt-1 flex-shrink-0" strokeWidth={3} />
+                <span className="text-hearst-text-secondary text-lg leading-relaxed">Comparaison automatique des deux modèles de deal</span>
+              </li>
+              <li className="flex items-start gap-4">
+                <Check className="w-6 h-6 text-hearst-green mt-1 flex-shrink-0" strokeWidth={3} />
+                <span className="text-hearst-text-secondary text-lg leading-relaxed">Paramètres ajustables (prix BTC, difficulté, etc.)</span>
+              </li>
+            </ul>
+          </Card>
         </div>
       </main>
     </div>
   );
 }
-
-

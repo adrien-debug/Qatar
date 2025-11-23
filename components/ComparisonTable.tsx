@@ -12,6 +12,7 @@ import {
   calculateCAPEX,
   defaultHardwareCosts,
 } from "@/lib/financial-calculations";
+import Card from "./Card";
 
 export default function ComparisonTable() {
   const phase = defaultPhases[2]; // Phase 3 - 200MW
@@ -78,20 +79,20 @@ export default function ComparisonTable() {
     },
     {
       metric: "Sovereign BTC Accumulation",
-      dealA: dealAResult.monthlyBTC * 12,
+      dealA: dealAResult.totalMonthlyBTC * 12,
       dealB: dealBResult.qatarMonthlyBTC * 12,
       unit: "BTC/year",
     },
   ];
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 overflow-x-auto">
-      <h3 className="text-2xl font-semibold mb-6 text-hearst-text">
+    <Card className="overflow-x-auto">
+      <h3 className="text-2xl font-semibold mb-6 text-white">
         Comparaison Deal A vs Deal B
       </h3>
       <table className="w-full">
         <thead>
-          <tr className="border-b-2 border-gray-200">
+          <tr className="border-b-2 border-hearst-grey-100">
             <th className="text-left py-3 px-4 font-semibold text-hearst-text">Metric</th>
             <th className="text-center py-3 px-4 font-semibold text-hearst-text">Deal A (20% Rev)</th>
             <th className="text-center py-3 px-4 font-semibold text-hearst-green">Deal B (20% MW)</th>
@@ -101,25 +102,34 @@ export default function ComparisonTable() {
           {comparison.map((row, index) => (
             <tr
               key={index}
-              className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+              className="border-b border-hearst-grey-100 hover:bg-hearst-bg-hover transition-colors"
             >
               <td className="py-3 px-4 font-medium">{row.metric}</td>
               <td className="py-3 px-4 text-center">
                 {typeof row.dealA === "number"
-                  ? `${row.dealA >= 0 ? "+" : ""}${(row.dealA / (row.unit === "M$" ? 1000000 : 1)).toFixed(2)}${row.unit}`
+                  ? row.unit === "M$"
+                    ? `${row.dealA >= 0 ? "+" : ""}$${(row.dealA / 1000000).toFixed(2)}M`
+                    : row.unit === "BTC/year"
+                    ? `${row.dealA.toFixed(2)} ${row.unit}`
+                    : `${row.dealA >= 0 ? "+" : ""}${row.dealA.toFixed(2)}${row.unit}`
                   : row.dealA}
               </td>
               <td className="py-3 px-4 text-center text-hearst-green font-semibold">
                 {typeof row.dealB === "number"
-                  ? `${row.dealB >= 0 ? "+" : ""}${(row.dealB / (row.unit === "M$" ? 1000000 : 1)).toFixed(2)}${row.unit}`
+                  ? row.unit === "M$"
+                    ? `${row.dealB >= 0 ? "+" : ""}$${(row.dealB / 1000000).toFixed(2)}M`
+                    : row.unit === "BTC/year"
+                    ? `${row.dealB.toFixed(2)} ${row.unit}`
+                    : `${row.dealB >= 0 ? "+" : ""}${row.dealB.toFixed(2)}${row.unit}`
                   : row.dealB}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-    </div>
+    </Card>
   );
 }
+
 
 

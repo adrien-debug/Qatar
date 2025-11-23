@@ -1,6 +1,7 @@
 "use client";
 
 import { MiningParams } from "@/lib/financial-calculations";
+import Card from "./Card";
 
 interface InputPanelProps {
   miningParams: MiningParams;
@@ -12,7 +13,7 @@ export default function InputPanel({
   onParamsChange,
 }: InputPanelProps) {
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+    <Card>
       <h3 className="text-xl font-semibold mb-4 text-hearst-text">
         Paramètres Financiers
       </h3>
@@ -90,8 +91,6 @@ export default function InputPanel({
           />
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
-
-

@@ -11,8 +11,12 @@ import {
   calculateCAPEX,
   defaultHardwareCosts,
 } from "@/lib/financial-calculations";
-import InputPanel from "./InputPanel";
-import PhaseSelector from "./PhaseSelector";
+import InputPanel from "@/components/InputPanel";
+import PhaseSelector from "@/components/PhaseSelector";
+import CalculationNotes from "@/components/CalculationNotes";
+import SectionHeader from "@/components/SectionHeader";
+import Card from "@/components/Card";
+import Button from "@/components/Button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 export default function DealBCalculator() {
@@ -22,7 +26,9 @@ export default function DealBCalculator() {
 
   const phase = defaultPhases[selectedPhase - 1];
   const capex = calculateCAPEX(phase.mw, defaultHardwareCosts, selectedPhase);
-  const opexPerMW = calculateOPEXMonthly(1, 2.5, capex / phase.mw);
+  // Calculate OPEX per MW: total OPEX for phase divided by MW
+  const totalOpexMonthly = calculateOPEXMonthly(phase.mw, 2.5, capex);
+  const opexPerMW = totalOpexMonthly / phase.mw;
 
   const inputs: DealBInputs = {
     phase: selectedPhase,
@@ -52,10 +58,11 @@ export default function DealBCalculator() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-black text-white p-8 rounded-lg">
-        <h2 className="text-3xl font-bold mb-2">Deal Model B</h2>
-        <p className="text-gray-300">Megawatt Allocation with Zero-Cost Electricity</p>
-      </div>
+      <SectionHeader
+        title="Deal Model B"
+        subtitle="Megawatt Allocation with Zero-Cost Electricity"
+        variant="dark"
+      />
 
       <PhaseSelector
         phases={defaultPhases}
@@ -65,23 +72,20 @@ export default function DealBCalculator() {
 
       <InputPanel miningParams={miningParams} onParamsChange={(p) => setMiningParams({ ...miningParams, ...p })} />
 
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <Card>
+        <label className="block text-sm font-medium text-gray-700 mb-4">
           MW Allocation Percentage
         </label>
         <div className="flex gap-2 mb-4">
           {shareOptions.map((option) => (
-            <button
+            <Button
               key={option}
               onClick={() => setMwShare(option)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                mwShare === option
-                  ? "bg-hearst-green text-black"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+              active={mwShare === option}
+              variant="secondary"
             >
               {option}%
-            </button>
+            </Button>
           ))}
         </div>
         <input
@@ -93,10 +97,10 @@ export default function DealBCalculator() {
           onChange={(e) => setMwShare(parseInt(e.target.value))}
           className="w-full"
         />
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <Card>
           <h3 className="text-lg font-semibold mb-4 text-hearst-text">HEARST Allocation</h3>
           <div className="space-y-3">
             <div>
@@ -124,9 +128,9 @@ export default function DealBCalculator() {
               </div>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <Card>
           <h3 className="text-lg font-semibold mb-4 text-hearst-text">Qatar Allocation</h3>
           <div className="space-y-3">
             <div>
@@ -154,11 +158,11 @@ export default function DealBCalculator() {
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <Card>
           <h3 className="text-lg font-semibold mb-4 text-hearst-text">Allocation de Capacité</h3>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
@@ -179,9 +183,9 @@ export default function DealBCalculator() {
               <Tooltip />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </Card>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <Card>
           <h3 className="text-lg font-semibold mb-4 text-hearst-text">Option de Revente Énergie</h3>
           <div className="space-y-4">
             <div>
@@ -201,10 +205,10 @@ export default function DealBCalculator() {
               au lieu de miner, générant un cash flow stable.
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+      <Card>
         <h3 className="text-lg font-semibold mb-4 text-hearst-text">
           Comparaison par MW Share
         </h3>
@@ -219,7 +223,9 @@ export default function DealBCalculator() {
             <Bar dataKey="qatar" fill="#1A1A1A" name="Qatar" />
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </Card>
+
+      <CalculationNotes dealType="B" />
     </div>
   );
 }
