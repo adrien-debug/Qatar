@@ -133,6 +133,8 @@ export default function ProjectionCalculator() {
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>("");
   const [qatarTableOpen, setQatarTableOpen] = useState(true);
+  const [hearstTableOpen, setHearstTableOpen] = useState(true);
+  const [detailsProjectionsOpen, setDetailsProjectionsOpen] = useState(true);
   
   // Charger les données depuis localStorage uniquement après le montage côté client
   useEffect(() => {
@@ -859,10 +861,30 @@ export default function ProjectionCalculator() {
 
       {/* Tableau de projection - Dupliqué */}
       <Card className="overflow-x-auto bg-gradient-to-br from-hearst-bg-secondary to-hearst-bg-tertiary mt-12 overflow-hidden relative">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#8A1538] to-transparent z-10"></div>
-        <h2 className="text-2xl md:text-3xl font-bold mb-10 mt-6 ml-6 text-white text-left">
-          Hearst
-        </h2>
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-hearst-green to-transparent z-10"></div>
+        <div className="flex flex-col items-center justify-center mb-0 mt-6">
+          <button
+            onClick={() => setHearstTableOpen(!hearstTableOpen)}
+            className="flex flex-col items-center hover:opacity-80 transition-opacity w-full"
+          >
+            <div className="flex items-center justify-center gap-4 w-full mb-2">
+              <div className="flex-1 h-0.5 bg-gradient-to-r from-transparent via-hearst-green to-transparent"></div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white text-center">
+                Hearst
+              </h2>
+              <div className="flex-1 h-0.5 bg-gradient-to-l from-transparent via-hearst-green to-transparent"></div>
+            </div>
+            <div className="flex items-center justify-center">
+              {hearstTableOpen ? (
+                <ChevronUp className="w-16 h-16 text-hearst-green" />
+              ) : (
+                <ChevronDown className="w-16 h-16 text-hearst-green" />
+              )}
+            </div>
+          </button>
+        </div>
+        
+        {hearstTableOpen && (
         <div className="rounded-xl overflow-hidden border border-hearst-grey-100/30">
           <table className="w-full">
             <thead>
@@ -904,6 +926,7 @@ export default function ProjectionCalculator() {
             </tbody>
           </table>
         </div>
+        )}
 
         {/* Total Investment - Décomposition */}
         <div className="mt-10 pt-10 border-t-2 border-hearst-grey-100/30">
@@ -913,14 +936,17 @@ export default function ProjectionCalculator() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-4">
             {/* Infrastructure */}
-            <div className="p-5 bg-transparent rounded-xl border-2 border-transparent hover:border-hearst-green/30 transition-all duration-300 cursor-pointer relative">
+            <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent"></div>
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-hearst-green to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
               <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
-                <div className="w-10 h-10 bg-transparent rounded-lg flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-hearst-green" strokeWidth={2.5} />
+                <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
+                  <Zap className="w-10 h-10 text-hearst-green" strokeWidth={2.5} />
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-sm font-semibold text-hearst-green uppercase tracking-wide">Infrastructure</div>
+                <div className="text-sm font-semibold text-white uppercase tracking-wide">Infrastructure</div>
                 <div className="text-xl font-bold text-white mt-4">
                   ${safeToFixed((defaultHardwareCosts.infrastructurePerMW + defaultHardwareCosts.coolingPerMW + defaultHardwareCosts.networkingPerMW) * phase.mw / 1000000, 2)}M
                 </div>
@@ -928,14 +954,16 @@ export default function ProjectionCalculator() {
             </div>
 
             {/* Hardware */}
-            <div className="p-5 bg-transparent rounded-xl border-2 border-transparent hover:border-hearst-green/30 transition-all duration-300 cursor-pointer relative">
+            <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
+              <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent"></div>
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-hearst-green to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
               <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
-                <div className="w-10 h-10 bg-transparent rounded-lg flex items-center justify-center">
-                  <Activity className="w-5 h-5 text-hearst-green" strokeWidth={2.5} />
+                <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
+                  <Activity className="w-10 h-10 text-hearst-green" strokeWidth={2.5} />
               </div>
               </div>
               <div className="text-center">
-                <div className="text-sm font-semibold text-hearst-green uppercase tracking-wide">Hardware</div>
+                <div className="text-sm font-semibold text-white uppercase tracking-wide">Hardware</div>
                 <div className="text-xl font-bold text-white mt-4">
                   ${safeToFixed(defaultHardwareCosts.asicPerMW * phase.mw / 1000000, 2)}M
                 </div>
@@ -943,14 +971,16 @@ export default function ProjectionCalculator() {
             </div>
 
             {/* OPEX Deployment */}
-            <div className="p-5 bg-transparent rounded-xl border-2 border-transparent hover:border-hearst-green/30 transition-all duration-300 cursor-pointer relative">
+            <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
+              <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent"></div>
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-hearst-green to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
               <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
-                <div className="w-10 h-10 bg-transparent rounded-lg flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-hearst-green" strokeWidth={2.5} />
+                <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
+                  <Calendar className="w-10 h-10 text-hearst-green" strokeWidth={2.5} />
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-sm font-semibold text-hearst-green uppercase tracking-wide">OPEX Deployment</div>
+                <div className="text-sm font-semibold text-white uppercase tracking-wide">OPEX Deployment</div>
                 <div className="text-xl font-bold text-white mt-4">
                   ${safeToFixed(opexMonthly * 3 / 1000000, 2)}M
                 </div>
@@ -958,14 +988,16 @@ export default function ProjectionCalculator() {
             </div>
 
             {/* Total */}
-            <div className="p-5 bg-transparent rounded-xl border-2 border-transparent hover:border-hearst-green/50 transition-all duration-300 cursor-pointer relative">
+            <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
+              <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent"></div>
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-hearst-green to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
               <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
-                <div className="w-10 h-10 bg-transparent rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-hearst-green" strokeWidth={2.5} />
+                <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
+                  <DollarSign className="w-10 h-10 text-hearst-green" strokeWidth={2.5} />
               </div>
               </div>
               <div className="text-center">
-                <div className="text-sm font-semibold text-hearst-green uppercase tracking-wide">Total Investment</div>
+                <div className="text-sm font-semibold text-white uppercase tracking-wide">Total Investment</div>
                 <div className="text-xl font-bold text-white mt-4">
                   ${safeToFixed(capex / 1000000, 2)}M
                 </div>
@@ -975,11 +1007,69 @@ export default function ProjectionCalculator() {
         </div>
       </Card>
 
-      {/* Tableau Détails des Projections - Premium */}
-      <Card className="overflow-x-auto bg-gradient-to-br from-hearst-bg-secondary to-hearst-bg-tertiary">
+      {/* Projections sur 5 ans - Premium */}
+      <Card className="bg-hearst-bg-secondary">
         <h2 className="text-2xl md:text-3xl font-bold mb-10 mt-6 ml-6 text-white text-left">
-          Détails des Projections
+          Projections sur 5 Ans
         </h2>
+        <div className="bg-gray-800/50 rounded-lg p-6">
+        <ResponsiveContainer width="100%" height={400}>
+          <LineChart data={projectionData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
+              <XAxis dataKey="year" stroke="#E2E8F0" />
+              <YAxis label={{ value: "Revenue/Profit (M$)", angle: -90, position: "insideLeft" }} stroke="#E2E8F0" />
+              <Tooltip 
+                formatter={(value: number) => `$${safeToFixed(value, 2)}M`}
+                contentStyle={{ backgroundColor: '#1A202C', border: '1px solid #4A5568', borderRadius: '8px' }}
+                labelStyle={{ color: '#E2E8F0' }}
+              />
+              <Legend wrapperStyle={{ color: '#E2E8F0' }} />
+            <Line
+              type="monotone"
+              dataKey="hearst"
+              stroke="#A3FF8B"
+              strokeWidth={3}
+              name="HEARST"
+            />
+            <Line
+              type="monotone"
+              dataKey="total"
+              stroke="#A3FF8B"
+              strokeWidth={2}
+              strokeDasharray="5 5"
+              name="Total"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+        </div>
+      </Card>
+
+      {/* Tableau Détails des Projections - Premium */}
+      <Card className="overflow-x-auto bg-gradient-to-br from-hearst-bg-secondary to-hearst-bg-tertiary mt-12 overflow-hidden relative">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#3498db] to-transparent z-10"></div>
+        <div className="flex flex-col items-center justify-center mb-0 mt-6">
+          <button
+            onClick={() => setDetailsProjectionsOpen(!detailsProjectionsOpen)}
+            className="flex flex-col items-center hover:opacity-80 transition-opacity w-full"
+          >
+            <div className="flex items-center justify-center gap-4 w-full mb-2">
+              <div className="flex-1 h-0.5 bg-gradient-to-r from-transparent via-[#3498db] to-transparent"></div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white text-center">
+                Détails des Projections
+              </h2>
+              <div className="flex-1 h-0.5 bg-gradient-to-l from-transparent via-[#3498db] to-transparent"></div>
+            </div>
+            <div className="flex items-center justify-center">
+              {detailsProjectionsOpen ? (
+                <ChevronUp className="w-16 h-16 text-[#3498db]" />
+              ) : (
+                <ChevronDown className="w-16 h-16 text-[#3498db]" />
+              )}
+            </div>
+          </button>
+        </div>
+        
+        {detailsProjectionsOpen && (
         <div className="rounded-xl overflow-hidden border border-hearst-grey-100/30">
           <table className="w-full text-sm">
             <thead>
@@ -1049,72 +1139,49 @@ export default function ProjectionCalculator() {
             </tbody>
           </table>
         </div>
-      </Card>
-
-      {/* Projections sur 5 ans - Premium */}
-      <Card className="bg-hearst-bg-secondary">
-        <h2 className="text-2xl md:text-3xl font-bold mb-10 mt-6 ml-6 text-white text-left">
-          Projections sur 5 Ans
-        </h2>
-        <div className="bg-gray-800/50 rounded-lg p-6">
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={projectionData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
-              <XAxis dataKey="year" stroke="#E2E8F0" />
-              <YAxis label={{ value: "Revenue/Profit (M$)", angle: -90, position: "insideLeft" }} stroke="#E2E8F0" />
-              <Tooltip 
-                formatter={(value: number) => `$${safeToFixed(value, 2)}M`}
-                contentStyle={{ backgroundColor: '#1A202C', border: '1px solid #4A5568', borderRadius: '8px' }}
-                labelStyle={{ color: '#E2E8F0' }}
-              />
-              <Legend wrapperStyle={{ color: '#E2E8F0' }} />
-            <Line
-              type="monotone"
-              dataKey="hearst"
-              stroke="#A3FF8B"
-              strokeWidth={3}
-              name="HEARST"
-            />
-            <Line
-              type="monotone"
-              dataKey="total"
-              stroke="#A3FF8B"
-              strokeWidth={2}
-              strokeDasharray="5 5"
-              name="Total"
-            />
-          </LineChart>
-        </ResponsiveContainer>
-        </div>
+        )}
       </Card>
 
       {/* Bouton Premium pour Générer le Rapport */}
-      <Card className="bg-gradient-to-br from-hearst-bg-secondary via-hearst-bg-tertiary to-hearst-bg-secondary relative overflow-hidden">
-        <div className="relative z-10">
-          <div className="flex items-center justify-between">
+      <Card className="bg-gradient-to-br from-hearst-bg-secondary via-hearst-bg-tertiary to-hearst-bg-secondary relative overflow-hidden mt-12">
+        <div className="relative z-10 p-6">
+          <div className="flex items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-hearst-green/20 rounded-2xl flex items-center justify-center border-2 border-hearst-green/30">
-                <FileText className="w-8 h-8 text-hearst-green" strokeWidth={2.5} />
-              </div>
+              <FileText className="w-10 h-10 text-[#3498db]" strokeWidth={2.5} />
               <div>
-                <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
                   Rapport Financier
                 </h3>
-                <p className="text-hearst-text-secondary">
+                <p className="text-hearst-text-secondary text-sm">
                   Générez un rapport PDF premium avec toutes les données financières
                 </p>
               </div>
             </div>
             <button
               onClick={() => router.push("/report")}
-              className="px-8 py-4 bg-hearst-green text-black rounded-xl font-bold text-lg flex items-center gap-3"
+              className="px-6 py-3 bg-[#3498db] text-white rounded-lg font-semibold text-base flex items-center gap-2 whitespace-nowrap"
             >
-              <Download className="w-6 h-6" />
+              <Download className="w-4 h-4" />
               Générer le Rapport
             </button>
           </div>
         </div>
       </Card>
+
+      {/* Footer avec détails Hearst */}
+      <footer className="h-[100px] bg-hearst-bg-secondary border-t border-hearst-grey-100/30 flex items-center justify-between px-8 mt-12">
+        <div className="flex items-center gap-4 text-hearst-text-secondary text-xs md:text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-hearst-green font-bold text-sm md:text-base">HEARST</span>
+            <span className="text-hearst-text-secondary">Solutions</span>
+          </div>
+          <span className="hidden md:block">•</span>
+          <span className="hidden md:block">Bitcoin Mining Infrastructure & Financial Solutions</span>
+        </div>
+        <div className="text-hearst-text-secondary text-xs">
+          <span>© 2024 Hearst Solutions. All rights reserved.</span>
+        </div>
+      </footer>
       </div>
     </div>
   );
