@@ -259,7 +259,7 @@ export default function GoogleSheetsLoader({
               <span className="absolute right-4 top-2 text-hearst-green font-bold">%</span>
             </div>
             <div className="text-xs text-hearst-text-secondary mt-1">
-              Partage des coûts d'électricité
+              Partage des coûts d&apos;électricité
             </div>
           </div>
 

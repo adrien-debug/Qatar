@@ -10,17 +10,17 @@ export default function Header() {
   const [username, setUsername] = useState<string>("");
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // Ne pas afficher le header sur la page de login
-  if (pathname === "/login") {
-    return null;
-  }
-
   useEffect(() => {
     const savedUsername = localStorage.getItem("qatar-username");
     if (savedUsername) {
       setUsername(savedUsername);
     }
   }, []);
+
+  // Ne pas afficher le header sur la page de login
+  if (pathname === "/login") {
+    return null;
+  }
 
   const handleLogout = () => {
     localStorage.removeItem("qatar-auth");
