@@ -5,25 +5,25 @@
 @tailwind utilities;
 
 :root {
-  /* Couleur principale HEARST (Signature) */
-  --primary-green: #8afd81;
-  --accent-primary: #8afd81;
-  --hearst-primary: #8afd81;
-  --accent-primary-dark: #6fdc66;
-  --accent-primary-light: #a5ff9c;
-  --hearst-primary-dark: #6fdc66;
-  --hearst-primary-light: #a5ff9c;
+  /* Couleur principale HEARST (Signature) - Vert néon doux */
+  --primary-green: #7CFF5A;
+  --accent-primary: #7CFF5A;
+  --hearst-primary: #7CFF5A;
+  --accent-primary-dark: #6ae048;
+  --accent-primary-light: #8eff6c;
+  --hearst-primary-dark: #6ae048;
+  --hearst-primary-light: #8eff6c;
   
-  /* Backgrounds */
-  --primary-dark: #000000;
-  --bg-primary: #0a0a0a;
-  --primary-grey: #1a1a1a;
-  --bg-secondary: #1a1a1a;
-  --bg-tertiary: #242424;
-  --bg-hover: #2a2a2a;
-  --hearst-dark-900: #0A0A0A;
-  --hearst-dark-800: #141414;
-  --hearst-dark-700: #1A1A1A;
+  /* Backgrounds - Dark Mode Premium */
+  --primary-dark: #050607;
+  --bg-primary: #050607;
+  --primary-grey: #111315;
+  --bg-secondary: #111315;
+  --bg-tertiary: #15181d;
+  --bg-hover: #1a1d22;
+  --hearst-dark-900: #050607;
+  --hearst-dark-800: #0a0b0d;
+  --hearst-dark-700: #111315;
   
   /* Nuances de gris */
   --grey-100: #2a2a2a;
@@ -55,9 +55,9 @@
   --border-color-alpha: rgba(255, 255, 255, 0.08);
   
   /* Aliases pour compatibilité */
-  --hearst-green: #8afd81;
-  --hearst-dark: #000000;
-  --hearst-light: #0a0a0a;
+  --hearst-green: #7CFF5A;
+  --hearst-dark: #050607;
+  --hearst-light: #050607;
   --hearst-text: #ffffff;
   --hearst-white: #ffffff;
   
@@ -79,10 +79,10 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   background-color: var(--primary-dark);
   background-image: 
-    radial-gradient(circle at 20% 50%, rgba(138, 253, 129, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(138, 253, 129, 0.02) 0%, transparent 50%),
-    radial-gradient(circle at 40% 20%, rgba(138, 253, 129, 0.02) 0%, transparent 50%),
-    linear-gradient(180deg, #000000 0%, #0a0a0a 50%, #000000 100%);
+    radial-gradient(circle at 20% 50%, rgba(124, 255, 90, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(124, 255, 90, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(124, 255, 90, 0.02) 0%, transparent 50%),
+    linear-gradient(180deg, #050607 0%, #050607 50%, #050607 100%);
   background-attachment: fixed;
   background-size: 100% 100%;
   color: var(--text-primary);
@@ -102,15 +102,15 @@ body::before {
       0deg,
       transparent,
       transparent 2px,
-      rgba(138, 253, 129, 0.01) 2px,
-      rgba(138, 253, 129, 0.01) 4px
+      rgba(124, 255, 90, 0.01) 2px,
+      rgba(124, 255, 90, 0.01) 4px
     ),
     repeating-linear-gradient(
       90deg,
       transparent,
       transparent 2px,
-      rgba(138, 253, 129, 0.01) 2px,
-      rgba(138, 253, 129, 0.01) 4px
+      rgba(124, 255, 90, 0.01) 2px,
+      rgba(124, 255, 90, 0.01) 4px
     );
   pointer-events: none;
   z-index: 0;

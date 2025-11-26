@@ -40,7 +40,7 @@ export default function RangeSlider({
         onChange={(e) => onChange(parseInt(e.target.value))}
         className={`w-full range-slider ${className}`}
         style={{
-          background: `linear-gradient(to right, #A3FF8B 0%, #A3FF8B ${((value - min) / (max - min)) * 100}%, #e5e7eb ${((value - min) / (max - min)) * 100}%, #e5e7eb 100%)`,
+          background: `linear-gradient(to right, #8afd81 0%, #8afd81 ${((value - min) / (max - min)) * 100}%, #e5e7eb ${((value - min) / (max - min)) * 100}%, #e5e7eb 100%)`,
         }}
       />
     </div>

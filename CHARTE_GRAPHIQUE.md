@@ -5,10 +5,11 @@
 
 ## 📐 COULEURS PRINCIPALES
 
-### Palette HEARST (selon slides)
-- **Vert Principal** : `#A3FF8B` (hearst-green)
+### Palette HEARST (selon charte complète HearstAI)
+- **Vert Principal** : `#8afd81` (hearst-green) ⚠️ **STANDARDISÉ**
   - Utilisation : Boxes de métriques, accents, highlights, graphiques HEARST
   - Exemple : Key Facts boxes, pays, métriques importantes
+  - **Variations** : `#6fdc66` (dark/hover), `#a5ff9c` (light)
   
 - **Noir** : `#000000` (hearst-dark)
   - Utilisation : Headers de sections, navigation, sections importantes
@@ -83,7 +84,7 @@ Cartes standardisées
 - `default` : Fond blanc, bordure grise, ombre légère
 - `dark` : Fond noir, texte blanc
 - `minimal` : Fond blanc, bordure simple
-- `green-border` : Fond blanc, bordure verte (#A3FF8B)
+- `green-border` : Fond blanc, bordure verte (#8afd81)
 
 ```tsx
 <Card variant="default" className="...">
@@ -101,7 +102,7 @@ Boxes vertes pour métriques clés (comme dans les slides)
   note="(highly competitive)"
 />
 ```
-- Fond : Vert #A3FF8B
+- Fond : Vert #8afd81
 - Texte : Noir
 - Style : Comme les "Key Facts" des slides
 
@@ -115,7 +116,7 @@ Boxes pour pays/éléments avec bordure verte
 />
 ```
 - Fond : Vert transparent (`bg-hearst-green/20`)
-- Bordure : Vert #A3FF8B
+- Bordure : Vert #8afd81
 
 ### 5. InfoBox
 Boxes d'information
@@ -134,7 +135,7 @@ Boxes d'information
 Boutons standardisés
 
 **Variantes** :
-- `primary` : Vert #A3FF8B, texte noir (actif)
+- `primary` : Vert #8afd81, texte noir (actif)
 - `secondary` : Fond gris clair
 - `outline` : Bordure, fond transparent
 
@@ -211,7 +212,7 @@ Boutons standardisés
 ## 📊 GRAPHIQUES (selon slides)
 
 ### Couleurs des Graphiques
-- **HEARST** : `#A3FF8B` (vert)
+- **HEARST** : `#8afd81` (vert)
 - **Qatar** : `#1A1A1A` (noir)
 - **Total/Neutre** : `#6B7280` (gris) - optionnel
 
@@ -228,13 +229,13 @@ Boutons standardisés
 ### Style
 - **Fond** : Noir (`bg-black`)
 - **Texte** : Blanc
-- **Actif** : Vert #A3FF8B, texte noir
+- **Actif** : Vert #8afd81, texte noir
 - **Hover** : Gris foncé (`hover:bg-gray-800`)
 - **Bordure** : `border-b border-gray-800`
 
 ### Logo
 - **HEARST** : Blanc, font-bold
-- **Solutions** : Vert #A3FF8B, font-bold
+- **Solutions** : Vert #8afd81, font-bold
 
 ---
 
@@ -308,7 +309,7 @@ Boutons standardisés
 ## 🎨 CHECKLIST D'APPLICATION
 
 ✅ Headers noirs avec texte blanc pour sections importantes
-✅ Boxes vertes (#A3FF8B) pour métriques clés
+✅ Boxes vertes (#8afd81) pour métriques clés
 ✅ Sections alternées noir/blanc
 ✅ Police Inter partout
 ✅ Espacements généreux (24-32px)

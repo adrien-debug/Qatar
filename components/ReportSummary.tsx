@@ -8,8 +8,6 @@ interface ReportSummaryProps {
   phaseMW: number;
   phaseTimeline: string;
   capex: number;
-  hearstMW?: number;
-  qatarMW?: number;
 }
 
 const safeToFixed = (value: number | undefined | null, decimals: number): string => {
@@ -40,8 +38,6 @@ export default function ReportSummary({
   phaseMW,
   phaseTimeline,
   capex,
-  hearstMW,
-  qatarMW,
 }: ReportSummaryProps) {
   return (
     <div className="pdf-avoid-break mb-8 print:mb-6">
@@ -91,16 +87,9 @@ export default function ReportSummary({
         <div className="bg-gray-900 print:bg-gray-800 border-2 border-hearst-green/40 print:border-hearst-green/60 p-4 print:p-3 rounded-lg">
           <div className="text-xs print:text-[10px] font-medium text-gray-400 mb-1 uppercase tracking-wide flex items-center gap-1">
             <Zap className="w-3 h-3 print:w-2 print:h-2" />
-            MW Distribution
+            MW Total
           </div>
-          {hearstMW !== undefined && qatarMW !== undefined ? (
-            <>
-              <div className="text-sm print:text-xs font-bold text-hearst-green">HEARST: {safeToFixed(hearstMW, 1)} MW</div>
-              <div className="text-sm print:text-xs font-bold text-qatar-red mt-1">Qatar: {safeToFixed(qatarMW, 1)} MW</div>
-            </>
-          ) : (
-            <div className="text-lg print:text-base font-bold text-white">{phaseMW} MW</div>
-          )}
+          <div className="text-lg print:text-base font-bold text-white">{phaseMW} MW</div>
         </div>
       </div>
     </div>

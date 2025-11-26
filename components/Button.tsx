@@ -9,6 +9,7 @@ interface ButtonProps {
   active?: boolean;
   className?: string;
   type?: "button" | "submit" | "reset";
+  disabled?: boolean;
 }
 
 export default function Button({
@@ -18,6 +19,7 @@ export default function Button({
   active = false,
   className = "",
   type = "button",
+  disabled = false,
 }: ButtonProps) {
   const baseClasses = "px-6 py-3 rounded-lg font-medium transition-all";
   
@@ -30,11 +32,14 @@ export default function Button({
     variantClasses = "border-2 border-hearst-grey-100 text-hearst-text hover:border-hearst-green";
   }
 
+  const disabledClasses = disabled ? "opacity-50 cursor-not-allowed" : "";
+
   return (
     <button
       type={type}
       onClick={onClick}
-      className={`${baseClasses} ${variantClasses} ${className}`}
+      disabled={disabled}
+      className={`${baseClasses} ${variantClasses} ${disabledClasses} ${className}`}
     >
       {children}
     </button>

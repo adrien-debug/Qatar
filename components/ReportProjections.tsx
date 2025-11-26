@@ -33,7 +33,7 @@ export default function ReportProjections({ projections }: ReportProjectionsProp
               <th className="p-2 print:p-1.5 text-left text-xs print:text-[10px] font-bold text-white border border-hearst-green/30 print:border-hearst-green/50">Année</th>
               <th className="p-2 print:p-1.5 text-center text-xs print:text-[10px] font-bold text-white border border-hearst-green/30 print:border-hearst-green/50">Prix BTC (k$)</th>
               <th className="p-2 print:p-1.5 text-center text-xs print:text-[10px] font-bold text-hearst-green border border-hearst-green/30 print:border-hearst-green/50">HEARST (M$)</th>
-              <th className="p-2 print:p-1.5 text-center text-xs print:text-[10px] font-bold text-qatar-red border border-hearst-green/30 print:border-hearst-green/50">Qatar (M$)</th>
+              <th className="p-2 print:p-1.5 text-center text-xs print:text-[10px] font-bold text-white border border-hearst-green/30 print:border-hearst-green/50">Qatar (M$)</th>
               <th className="p-2 print:p-1.5 text-center text-xs print:text-[10px] font-bold text-white border border-hearst-green/30 print:border-hearst-green/50">Total (M$)</th>
             </tr>
           </thead>
@@ -49,10 +49,10 @@ export default function ReportProjections({ projections }: ReportProjectionsProp
                 <td className="p-2 print:p-1.5 text-center text-xs print:text-[10px] font-semibold text-gray-300 border border-gray-700 print:border-gray-600">
                   ${safeToFixed(proj.btcPrice, 0)}k
                 </td>
-                <td className="p-2 print:p-1.5 text-center text-xs print:text-[10px] font-bold text-hearst-green border border-gray-700 print:border-gray-600">
+                <td className="p-2 print:p-1.5 text-center text-xs print:text-[10px] font-semibold text-hearst-green border border-gray-700 print:border-gray-600">
                   ${safeToFixed(proj.hearst, 2)}M
                 </td>
-                <td className="p-2 print:p-1.5 text-center text-xs print:text-[10px] font-bold text-qatar-red border border-gray-700 print:border-gray-600">
+                <td className="p-2 print:p-1.5 text-center text-xs print:text-[10px] font-semibold text-white border border-gray-700 print:border-gray-600">
                   ${safeToFixed(proj.qatar, 2)}M
                 </td>
                 <td className="p-2 print:p-1.5 text-center text-xs print:text-[10px] font-semibold text-white border border-gray-700 print:border-gray-600">

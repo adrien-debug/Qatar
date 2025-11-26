@@ -52,7 +52,7 @@ L'application sera accessible sur **http://localhost:3000**
 
 ## 🎨 Design
 
-- **Couleur principale**: `#A3FF8B` (vert HEARST)
+- **Couleur principale**: `#8afd81` (vert HEARST)
 - **Police**: Inter (Google Fonts)
 - **Style**: Minimaliste, niveau gouvernemental
 - **Framework**: Tailwind CSS

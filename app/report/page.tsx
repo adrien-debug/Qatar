@@ -21,6 +21,7 @@ import ReportHeader from "@/components/ReportHeader";
 import ReportSummary from "@/components/ReportSummary";
 import ReportResults from "@/components/ReportResults";
 import ReportProjections from "@/components/ReportProjections";
+import ReportProjectionsDetails from "@/components/ReportProjectionsDetails";
 import ReportParams from "@/components/ReportParams";
 import ReportFooter from "@/components/ReportFooter";
 
@@ -91,7 +92,7 @@ export default function ReportPage() {
     }));
   }, []);
 
-  const phase = defaultPhases[selectedPhase - 1];
+  const phase = defaultPhases[selectedPhase - 1] ?? defaultPhases[0];
   
   // Utiliser les paramètres du scénario actif ou les valeurs par défaut
   const energyRate = activeScenario?.energyRate ?? 2.5;
@@ -100,11 +101,11 @@ export default function ReportPage() {
   const fixedCostsPerMW = activeScenario?.fixedCostsPerMW ?? 1000;
   const mwCapexCost = activeScenario?.mwCapexCost ?? 0;
   const hearstResellPricePerKwh = activeScenario?.hearstResellPricePerKwh ?? 0.055;
-  const mwAllocatedToHearst = activeScenario?.mwAllocatedToHearst ?? (dealType === "mw" ? (phase.mw * mwAllocated / 100) : 0);
-  
-  const capex = calculateCAPEX(phase.mw, defaultHardwareCosts, selectedPhase) + (mwCapexCost * phase.mw);
-  const opexMonthly = calculateOPEXMonthly(phase.mw, energyRate, capex, maintenancePercent, fixedCostsBase, fixedCostsPerMW);
-  const opexPerMW = phase.mw > 0 ? opexMonthly / phase.mw : 0;
+  const phaseMW = phase?.mw ?? 200;
+  const mwAllocatedToHearst = activeScenario?.mwAllocatedToHearst ?? (dealType === "mw" ? (phaseMW * mwAllocated / 100) : 0);
+  const capex = calculateCAPEX(phaseMW, defaultHardwareCosts, selectedPhase) + (mwCapexCost * phaseMW);
+  const opexMonthly = calculateOPEXMonthly(phaseMW, energyRate, capex, maintenancePercent, fixedCostsBase, fixedCostsPerMW);
+  const opexPerMW = phaseMW > 0 ? opexMonthly / phaseMW : 0;
 
   let dealAResult = null;
   let dealBResult = null;
@@ -113,7 +114,7 @@ export default function ReportPage() {
   if (dealType === "revenue") {
     const inputs: DealAInputs = {
       phase: selectedPhase,
-      mw: phase.mw,
+      mw: phaseMW,
       revenueSharePercent: revenueShare,
       miningParams,
       opexMonthly,
@@ -138,7 +139,7 @@ export default function ReportPage() {
       
       const yearInputs: DealAInputs = {
         phase: selectedPhase,
-        mw: phase.mw,
+        mw: phaseMW,
         revenueSharePercent: revenueShare,
         miningParams: yearMiningParams,
         opexMonthly,
@@ -154,12 +155,21 @@ export default function ReportPage() {
         qatar: safeNumber(yearResult.qatarNetProfit) / 1000000,
         total: (safeNumber(yearResult.hearstTotalRevenueYearly) + safeNumber(yearResult.qatarNetProfit)) / 1000000,
         btcPrice: safeNumber(yearBTCPrice) / 1000,
+        // Détails supplémentaires
+        hearstMonthlyBTC: safeNumber(yearResult.hearstMonthlyBTC),
+        qatarMonthlyBTC: safeNumber(yearResult.qatarMonthlyBTC),
+        totalMonthlyBTC: safeNumber(yearResult.totalMonthlyBTC),
+        hearstRevenueMonthly: safeNumber(yearResult.hearstTotalRevenueMonthly) / 1000000,
+        qatarRevenueMonthly: safeNumber(yearResult.qatarBtcRevenueMonthly) / 1000000,
+        hearstOpexYearly: safeNumber(yearResult.hearstOpexYearly) / 1000000,
+        qatarOpexYearly: safeNumber(yearResult.qatarOpexYearly) / 1000000,
+        difficulty: safeNumber(yearDifficulty),
       });
     }
   } else {
     const inputs: DealBInputs = {
       phase: selectedPhase,
-      totalMW: phase.mw,
+      totalMW: phaseMW,
       mwSharePercent: mwAllocated,
       miningParams,
       opexPerMW,
@@ -182,7 +192,7 @@ export default function ReportPage() {
       
       const yearInputs: DealBInputs = {
         phase: selectedPhase,
-        totalMW: phase.mw,
+        totalMW: phaseMW,
         mwSharePercent: mwAllocated,
         miningParams: yearMiningParams,
         opexPerMW,
@@ -190,12 +200,24 @@ export default function ReportPage() {
       };
       const yearResult = calculateDealB(yearInputs);
       
+      // Calculer l'OPEX annuel pour DealB
+      const hearstOpexYearly = 0; // HEARST n'a pas d'OPEX dans DealB
+      const qatarOpexYearly = (opexPerMW * yearResult.qatarMW * 12) / 1000000; // OPEX annuel Qatar en M$
+      
       projections.push({
         year,
         hearst: safeNumber(yearResult.hearstAnnualProfit) / 1000000,
         qatar: safeNumber(yearResult.qatarAnnualProfit) / 1000000,
         total: (safeNumber(yearResult.hearstAnnualProfit) + safeNumber(yearResult.qatarAnnualProfit)) / 1000000,
         btcPrice: safeNumber(yearBTCPrice) / 1000,
+        // Détails supplémentaires
+        hearstMonthlyBTC: safeNumber(yearResult.hearstMonthlyBTC),
+        qatarMonthlyBTC: safeNumber(yearResult.qatarMonthlyBTC),
+        hearstRevenueMonthly: safeNumber(yearResult.hearstMonthlyRevenue) / 1000000,
+        qatarRevenueMonthly: safeNumber(yearResult.qatarMonthlyRevenue) / 1000000,
+        hearstOpexYearly: hearstOpexYearly,
+        qatarOpexYearly: qatarOpexYearly,
+        difficulty: safeNumber(yearDifficulty),
       });
     }
   }
@@ -209,94 +231,95 @@ export default function ReportPage() {
   };
 
   return (
-    <>
-      {/* Navigation - masquée à l'impression */}
-      <div className="no-print">
-        <Navigation />
-        <div className="max-w-7xl mx-auto px-6 md:px-8 py-6">
-          <div className="flex items-center justify-between mb-6">
-            <button
-              onClick={() => router.back()}
-              className="flex items-center gap-2 px-4 py-2 bg-hearst-bg-secondary text-white rounded-lg hover:bg-hearst-bg-tertiary transition-all"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Retour
-            </button>
-            <div className="flex gap-3">
+    <div className="min-h-screen bg-hearst-dark">
+      <Navigation />
+      
+      <main className="p-8 overflow-y-auto min-h-screen">
+          {/* Navigation - masquée à l'impression */}
+          <div className="no-print mb-6">
+            <div className="flex items-center justify-between">
               <button
-                onClick={handleDownload}
-                className="flex items-center gap-2 px-6 py-3 bg-hearst-green text-black rounded-lg font-semibold hover:opacity-90 transition-all shadow-lg"
+                onClick={() => router.back()}
+                className="flex items-center gap-2 px-4 py-2 bg-hearst-bg-secondary text-white rounded-lg hover:bg-hearst-bg-tertiary transition-all"
               >
-                <Download className="w-5 h-5" />
-                Télécharger PDF
+                <ArrowLeft className="w-4 h-4" />
+                Retour
               </button>
-              <button
-                onClick={handlePrint}
-                className="flex items-center gap-2 px-6 py-3 bg-hearst-bg-tertiary text-white rounded-lg font-semibold hover:bg-hearst-bg-hover transition-all"
-              >
-                <FileText className="w-5 h-5" />
-                Imprimer
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleDownload}
+                  className="flex items-center gap-2 px-6 py-3 bg-hearst-green text-black rounded-lg font-semibold hover:opacity-90 transition-all shadow-lg"
+                >
+                  <Download className="w-5 h-5" />
+                  Télécharger PDF
+                </button>
+                <button
+                  onClick={handlePrint}
+                  className="flex items-center gap-2 px-6 py-3 bg-hearst-bg-tertiary text-white rounded-lg font-semibold hover:bg-hearst-bg-hover transition-all"
+                >
+                  <FileText className="w-5 h-5" />
+                  Imprimer
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Rapport PDF Premium avec Charte Graphique HEARST - Dark Mode */}
-      <div className="bg-gray-900 print:bg-[#050608] min-h-screen">
-        <div className="max-w-6xl mx-auto p-12 print:p-8 print:max-w-full">
-          {/* PAGE 1 - Executive Summary */}
-          <div className="pdf-page-break print:min-h-[calc(100vh-2.4cm)] print:flex print:flex-col">
-            {/* En-tête */}
-            <ReportHeader reportDate={reportDate} scenarioName={activeScenario?.name} />
-            
-            {/* Résumé Exécutif */}
-            <ReportSummary
-              dealType={dealType}
-              revenueShare={revenueShare}
-              mwAllocated={mwAllocated}
-              selectedPhase={selectedPhase}
-              phaseMW={phase.mw}
-              phaseTimeline={phase.timeline}
-              capex={capex}
-              hearstMW={dealAResult ? undefined : dealBResult?.hearstMW}
-              qatarMW={dealAResult ? undefined : dealBResult?.qatarMW}
-            />
-            
-            {/* Résultats HEARST et Qatar */}
-            <ReportResults
-              dealAResult={dealAResult}
-              dealBResult={dealBResult}
-              dealType={dealType}
-            />
-          </div>
-
-          {/* PAGE 2 - Détails & Paramètres */}
-          <div className="print:min-h-[calc(100vh-2.4cm)] print:flex print:flex-col print:justify-between">
-            <div className="flex-1">
-              {/* Projections sur 5 Ans */}
-              <ReportProjections projections={projections} />
-              
-              {/* Paramètres */}
-              <ReportParams
-                activeScenario={activeScenario}
-                energyRate={energyRate}
-                maintenancePercent={maintenancePercent}
-                fixedCostsBase={fixedCostsBase}
-                fixedCostsPerMW={fixedCostsPerMW}
+          {/* Rapport PDF Premium avec Charte Graphique HEARST - Dark Mode */}
+          <div className="bg-gray-900 print:bg-[#050608] min-h-screen">
+            <div className="max-w-6xl mx-auto p-12 print:p-8 print:max-w-full">
+              {/* PAGE 1 - Executive Summary */}
+              <div className="pdf-page-break print:min-h-[calc(100vh-2.4cm)] print:flex print:flex-col">
+                {/* En-tête */}
+                <ReportHeader reportDate={reportDate} scenarioName={activeScenario?.name} />
+                
+                {/* Résumé Exécutif */}
+                <ReportSummary
+                  dealType={dealType}
+                  revenueShare={revenueShare}
+                  mwAllocated={mwAllocated}
+                  selectedPhase={selectedPhase}
+                  phaseMW={phaseMW}
+                  phaseTimeline={phase.timeline}
+                  capex={capex}
+                />
+                
+                {/* Résultats */}
+              <ReportResults
+                dealAResult={dealAResult}
+                dealBResult={dealBResult}
+                dealType={dealType}
               />
-            </div>
-            
-            {/* Footer */}
-            <div className="mt-auto">
-              <ReportFooter reportDate={reportDate} />
+              </div>
+
+              {/* PAGE 2 - Détails & Paramètres */}
+              <div className="print:min-h-[calc(100vh-2.4cm)] print:flex print:flex-col print:justify-between">
+                <div className="flex-1">
+                  {/* Projections sur 5 Ans */}
+                  <ReportProjections projections={projections} />
+                  
+                  {/* Détails des Projections */}
+                  <ReportProjectionsDetails projections={projections} />
+                  
+                  {/* Paramètres */}
+                  <ReportParams
+                    activeScenario={activeScenario}
+                    energyRate={energyRate}
+                    maintenancePercent={maintenancePercent}
+                    fixedCostsBase={fixedCostsBase}
+                    fixedCostsPerMW={fixedCostsPerMW}
+                  />
+                </div>
+                
+                {/* Footer */}
+                <div className="mt-auto">
+                  <ReportFooter reportDate={reportDate} />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Styles pour l'impression - Dark Mode Premium */}
-      <style jsx global>{`
+          {/* Styles pour l'impression - Dark Mode Premium */}
+          <style jsx global>{`
         @media print {
           .no-print {
             display: none !important;
@@ -368,6 +391,7 @@ export default function ReportPage() {
           }
         }
       `}</style>
-    </>
+        </main>
+    </div>
   );
 }

@@ -38,3 +38,4 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   // Si authentifié ou sur la page de login, afficher le contenu
   return <>{children}</>;
 }
+

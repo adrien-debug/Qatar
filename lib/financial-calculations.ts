@@ -32,6 +32,11 @@ export interface DealConfig {
   mwCapexCost?: number; // Coût MW côté client (peut être 0 si Qatar finance)
   hearstResellPricePerKwh?: number; // Prix de revente électricité HEARST (default: 0.055)
   mwAllocatedToHearst?: number; // MW alloués à HEARST pour revente
+  // Paramètres depuis le Google Sheets
+  marginOnHardware?: number; // % (ex: 8%)
+  shareElectricity?: number; // % (ex: 15%)
+  shareSPV?: number; // % (ex: 8%)
+  elecCost?: number; // $/kWh (ex: 0.025)
 }
 
 export interface DealAInputs {
@@ -43,6 +48,11 @@ export interface DealAInputs {
   mwCapexCost?: number; // Coût MW (peut être 0)
   hearstResellPricePerKwh?: number; // Prix revente électricité (default: 0.055)
   mwAllocatedToHearst?: number; // MW alloués à HEARST
+  // Paramètres depuis le Google Sheets
+  marginOnHardware?: number; // % (ex: 8%)
+  shareElectricity?: number; // % (ex: 15%)
+  shareSPV?: number; // % (ex: 8%)
+  elecCost?: number; // $/kWh (ex: 0.025)
 }
 
 export interface DealBInputs {
@@ -52,6 +62,11 @@ export interface DealBInputs {
   miningParams: MiningParams;
   opexPerMW: number;
   energyRate?: number; // Taux d'énergie (cents/kWh) - optionnel pour compatibilité
+  // Paramètres depuis le Google Sheets
+  marginOnHardware?: number; // % (ex: 8%)
+  shareElectricity?: number; // % (ex: 15%)
+  shareSPV?: number; // % (ex: 8%)
+  elecCost?: number; // $/kWh (ex: 0.025)
 }
 
 export interface DealAResult {
@@ -65,8 +80,12 @@ export interface DealAResult {
   qatarBtcRevenueYearly: number; // Revenu BTC annuel Qatar
   hearstPowerRevenueMonthly: number; // Revenu revente électricité mensuel HEARST
   hearstPowerRevenueYearly: number; // Revenu revente électricité annuel HEARST
-  hearstTotalRevenueMonthly: number; // Revenu total mensuel HEARST (BTC + électricité)
-  hearstTotalRevenueYearly: number; // Revenu total annuel HEARST (BTC + électricité)
+  // Revenus supplémentaires depuis le spreadsheet
+  hearstMarginOnHardwareYearly?: number; // Margin on Hardware annuel HEARST
+  hearstShareElectricityYearly?: number; // Share Electricity annuel HEARST
+  hearstShareSPVYearly?: number; // Share SPV annuel HEARST
+  hearstTotalRevenueMonthly: number; // Revenu total mensuel HEARST (BTC + électricité + autres)
+  hearstTotalRevenueYearly: number; // Revenu total annuel HEARST (BTC + électricité + autres)
   hearstRevenue: number; // Alias pour compatibilité
   qatarRevenue: number; // Alias pour compatibilité
   hearstAnnual: number; // Alias pour compatibilité
@@ -96,6 +115,11 @@ export interface DealBResult {
   hearstElectricityCost: number; // Always 0
   qatarElectricityCost: number;
   resaleRevenue?: number; // Optional energy resale
+  // Revenus supplémentaires depuis le spreadsheet
+  hearstMarginOnHardwareYearly?: number;
+  hearstShareElectricityYearly?: number;
+  hearstShareSPVYearly?: number;
+  hearstTotalRevenueYearly?: number; // Total incluant les revenus supplémentaires
 }
 
 // Calculate monthly BTC production
@@ -139,10 +163,12 @@ export function calculateMonthlyBTC(
   const dailyBTCIssued = blocksPerDay * btcPerBlock; // ~450 BTC per day
   
   // Daily BTC production = hashrate share * daily BTC issued * uptime * (1 - pool fee)
+  // Selon formule: current_theorical_btc_mined_daily = (Total_btc_available_daily_minable + Total_btc_available_daily_minable_fees) * network_share_batch
+  // Ici dailyBTCIssued = Total_btc_available_daily_minable + Total_btc_available_daily_minable_fees
   const dailyBTCProduction = hashrateShare * dailyBTCIssued * (uptime / 100) * (1 - poolFee / 100);
   
-  // Monthly BTC production
-  const monthlyBTC = dailyBTCProduction * 30;
+  // Monthly BTC production selon formule: current_theorical_btc_mined_monthly = current_theorical_btc_mined_daily * 365 / 12
+  const monthlyBTC = dailyBTCProduction * 365 / 12;
   
   return Math.max(0, monthlyBTC); // Ensure non-negative
 }
@@ -269,9 +295,35 @@ export function calculateDealA(inputs: DealAInputs): DealAResult {
   const uptimeRatio = (inputs.miningParams.uptime || 90) / 100;
   const powerResale = calculateHearstPowerResaleRevenue(mwAllocated, resellPrice, uptimeRatio);
   
-  // Revenus totaux HEARST
-  const hearstTotalRevenueMonthly = hearstBtcRevenueMonthly + powerResale.monthly;
-  const hearstTotalRevenueYearly = hearstBtcRevenueYearly + powerResale.yearly;
+  // Revenus supplémentaires depuis le Google Sheets (si fournis)
+  // Calculer les valeurs du contrat hardware
+  const capexBreakdown = calculateCAPEXBreakdown(
+    inputs.mw,
+    defaultHardwareCosts,
+    inputs.phase,
+    inputs.mwCapexCost
+  );
+  const totalHardwareContractValue = capexBreakdown.hardware;
+  
+  // Calculer les coûts d'électricité totaux annuels
+  const totalElectricityCostYearly = inputs.mw * 1000 * 8760 * ((inputs.elecCost ?? 0.025) || 0.025);
+  
+  // Pour SPV, on utilise un pourcentage des revenus BTC (à ajuster selon le modèle métier)
+  const totalSPVRevenueYearly = qatarBtcRevenueYearly * (inputs.shareSPV ? inputs.shareSPV / 100 : 0);
+  
+  // Revenus HEARST depuis le spreadsheet
+  const marginOnHardwarePct = inputs.marginOnHardware ?? 8.0;
+  const shareElectricityPct = inputs.shareElectricity ?? 15.0;
+  const shareSPVPct = inputs.shareSPV ?? 8.0;
+  
+  const hearstMarginOnHardwareYearly = totalHardwareContractValue * (marginOnHardwarePct / 100);
+  const hearstShareElectricityYearly = totalElectricityCostYearly * (shareElectricityPct / 100);
+  const hearstShareSPVYearly = totalSPVRevenueYearly * (shareSPVPct / 100);
+  
+  // Revenus totaux HEARST (BTC + électricité + margin hardware + share electricity + share SPV)
+  const hearstAdditionalRevenueYearly = hearstMarginOnHardwareYearly + hearstShareElectricityYearly + hearstShareSPVYearly;
+  const hearstTotalRevenueMonthly = hearstBtcRevenueMonthly + powerResale.monthly + (hearstAdditionalRevenueYearly / 12);
+  const hearstTotalRevenueYearly = hearstBtcRevenueYearly + powerResale.yearly + hearstAdditionalRevenueYearly;
   
   // OPEX
   const opexAnnual = inputs.opexMonthly * 12;
@@ -283,14 +335,8 @@ export function calculateDealA(inputs: DealAInputs): DealAResult {
   const hearstNetProfit = hearstTotalRevenueYearly - hearstOpexYearly;
   const qatarNetProfit = qatarBtcRevenueYearly - qatarOpexYearly;
   
-  // CAPEX Breakdown
+  // CAPEX Breakdown (déjà calculé ci-dessus)
   const mwCapexCost = inputs.mwCapexCost ?? 0;
-  const capexBreakdown = calculateCAPEXBreakdown(
-    inputs.mw,
-    defaultHardwareCosts,
-    inputs.phase,
-    mwCapexCost
-  );
   
   // Total Investment (pour simplifier, on utilise le CAPEX total)
   // Dans Deal A, on peut avoir mwCapexCost = 0 si Qatar finance
@@ -318,6 +364,10 @@ export function calculateDealA(inputs: DealAInputs): DealAResult {
     qatarBtcRevenueYearly,
     hearstPowerRevenueMonthly: powerResale.monthly,
     hearstPowerRevenueYearly: powerResale.yearly,
+    // Revenus supplémentaires depuis le spreadsheet
+    hearstMarginOnHardwareYearly,
+    hearstShareElectricityYearly,
+    hearstShareSPVYearly,
     hearstTotalRevenueMonthly,
     hearstTotalRevenueYearly,
     // Aliases pour compatibilité
@@ -365,18 +415,54 @@ export function calculateDealB(inputs: DealBInputs): DealBResult {
   const hearstMonthlyRevenue = hearstMonthlyBTC * inputs.miningParams.btcPrice;
   const qatarMonthlyRevenue = qatarMonthlyBTC * inputs.miningParams.btcPrice;
   
+  // Revenus supplémentaires depuis le Google Sheets (si fournis)
+  // Pour Deal B, les revenus sont proportionnels aux MW alloués
+  const mwSharePct = inputs.mwSharePercent / 100;
+  const capexBreakdown = calculateCAPEXBreakdown(
+    inputs.totalMW,
+    defaultHardwareCosts,
+    inputs.phase,
+    undefined
+  );
+  const totalHardwareContractValue = capexBreakdown.hardware;
+  
+  // Calculer les coûts d'électricité totaux annuels
+  const elecCostPerKwh = inputs.elecCost ?? 0.025;
+  const totalElectricityCostYearly = inputs.totalMW * 1000 * 8760 * elecCostPerKwh;
+  
+  // Pour SPV, on utilise un pourcentage des revenus BTC totaux
+  const totalSPVRevenueYearly = (hearstMonthlyRevenue + qatarMonthlyRevenue) * 12;
+  
+  // Revenus HEARST depuis le spreadsheet (proportionnels aux MW alloués)
+  const marginOnHardwarePct = inputs.marginOnHardware ?? 8.0;
+  const shareElectricityPct = inputs.shareElectricity ?? 15.0;
+  const shareSPVPct = inputs.shareSPV ?? 8.0;
+  
+  // Les revenus sont calculés sur la base totale mais proportionnels aux MW alloués
+  const hearstMarginOnHardwareYearly = totalHardwareContractValue * (marginOnHardwarePct / 100) * mwSharePct;
+  const hearstShareElectricityYearly = totalElectricityCostYearly * (shareElectricityPct / 100) * mwSharePct;
+  const hearstShareSPVYearly = totalSPVRevenueYearly * (shareSPVPct / 100) * mwSharePct;
+  
   // HEARST pays no electricity, only fixed OPEX
   const hearstOPEX = inputs.opexPerMW * hearstMW;
-  const hearstAnnualProfit = (hearstMonthlyRevenue - hearstOPEX) * 12;
+  const hearstBtcRevenueAnnual = hearstMonthlyRevenue * 12;
+  
+  // Optional resale revenue - Utilise la même fonction que Deal A avec 5.5 cents/kWh et 90% uptime
+  const uptimeRatio = (inputs.miningParams.uptime || 90) / 100;
+  const resellPrice = 0.055; // 5.5 cents per kWh
+  const powerResale = calculateHearstPowerResaleRevenue(hearstMW, resellPrice, uptimeRatio);
+  const resaleRevenue = powerResale.yearly;
+  
+  // Revenus totaux HEARST (BTC + revente électricité + margin hardware + share electricity + share SPV)
+  const hearstAdditionalRevenueYearly = hearstMarginOnHardwareYearly + hearstShareElectricityYearly + hearstShareSPVYearly;
+  const hearstTotalRevenueYearly = hearstBtcRevenueAnnual + resaleRevenue + hearstAdditionalRevenueYearly;
+  const hearstAnnualProfit = hearstTotalRevenueYearly - (hearstOPEX * 12);
   
   // Qatar pays electricity + OPEX
   const qatarOPEX = inputs.opexPerMW * qatarMW;
   const energyRate = inputs.energyRate ?? 2.5; // Utilise energyRate du scénario ou défaut 2.5
   const qatarElectricityCost = qatarMW * 1000 * 720 * (energyRate / 100); // Utilise le taux d'énergie du scénario
   const qatarAnnualProfit = (qatarMonthlyRevenue - qatarOPEX - qatarElectricityCost) * 12;
-  
-  // Optional resale revenue
-  const resaleRevenue = hearstMW * 1000 * 720 * 0.055 * 12; // 5.5 cents per kWh
   
   return {
     hearstMW,
@@ -390,13 +476,16 @@ export function calculateDealB(inputs: DealBInputs): DealBResult {
     hearstElectricityCost: 0,
     qatarElectricityCost,
     resaleRevenue,
+    // Revenus supplémentaires depuis le spreadsheet
+    hearstMarginOnHardwareYearly,
+    hearstShareElectricityYearly,
+    hearstShareSPVYearly,
+    hearstTotalRevenueYearly,
   };
 }
 
 // Default configurations
 export const defaultPhases: PhaseConfig[] = [
-  { mw: 25, timeline: "M1-M6", status: "Launch" },
-  { mw: 100, timeline: "M7-M18", status: "Expansion" },
   { mw: 200, timeline: "M19-M36", status: "Full Scale" },
 ];
 

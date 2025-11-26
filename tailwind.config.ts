@@ -10,20 +10,20 @@ const config: Config = {
     extend: {
       colors: {
         hearst: {
-          // Couleur principale HEARST (Signature)
-          green: "#8afd81",
-          primary: "#8afd81",
-          "primary-dark": "#6fdc66",
-          "primary-light": "#a5ff9c",
-          // Backgrounds
-          dark: "#000000",
-          "dark-900": "#0A0A0A",
-          "dark-800": "#141414",
-          "dark-700": "#1A1A1A",
-          "bg-primary": "#0a0a0a",
-          "bg-secondary": "#1a1a1a",
-          "bg-tertiary": "#242424",
-          "bg-hover": "#2a2a2a",
+          // Couleur principale HEARST (Signature) - Vert néon doux
+          green: "#7CFF5A",
+          primary: "#7CFF5A",
+          "primary-dark": "#6ae048",
+          "primary-light": "#8eff6c",
+          // Backgrounds - Dark Mode Premium
+          dark: "#050607",
+          "dark-900": "#050607",
+          "dark-800": "#0a0b0d",
+          "dark-700": "#111315",
+          "bg-primary": "#050607",
+          "bg-secondary": "#111315",
+          "bg-tertiary": "#15181d",
+          "bg-hover": "#1a1d22",
           // Nuances de gris
           "grey-100": "#2a2a2a",
           "grey-200": "#3a3a3a",

@@ -175,7 +175,7 @@ export default function DealACalculator() {
             <YAxis label={{ value: "Revenue (M$)", angle: -90, position: "insideLeft" }} />
             <Tooltip formatter={(value: number) => `$${value.toFixed(2)}M`} />
             <Legend />
-            <Bar dataKey="hearst" fill="#A3FF8B" name="HEARST" />
+            <Bar dataKey="hearst" fill="#8afd81" name="HEARST" />
             <Bar dataKey="qatar" fill="#1A1A1A" name="Qatar" />
           </BarChart>
         </ResponsiveContainer>

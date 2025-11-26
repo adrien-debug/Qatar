@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Navigation from "@/components/Navigation";
 import ScenarioManager from "@/components/ScenarioManager";
 import CoinGeckoScraper from "@/components/CoinGeckoScraper";
+import FinancialParametersDisplay from "@/components/FinancialParametersDisplay";
 import Card from "@/components/Card";
 import SectionHeader from "@/components/SectionHeader";
 import { Calculator, Coins, Calendar, DollarSign, Activity, TrendingUp, Edit2, Save, X } from "lucide-react";
@@ -106,10 +107,13 @@ export default function SettingsPage() {
         <CoinGeckoScraper onScenarioCreated={handleScenarioCreated} />
         <ScenarioManager />
         
+        {/* Paramètres Financiers */}
+        <FinancialParametersDisplay />
+        
         {/* Header Premium */}
         <SectionHeader
-          title="Paramètres Financiers"
-          subtitle="Configuration avancée des formules de calcul et paramètres financiers"
+          title="Formules de Calcul"
+          subtitle="Configuration avancée des formules de calcul financier"
           variant="dark"
           size="large"
         />

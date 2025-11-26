@@ -5,6 +5,11 @@ import AuthGuard from "@/components/AuthGuard";
 export const metadata: Metadata = {
   title: "Qatar Financial Simulator - HEARST Solutions",
   description: "Dynamic financial modeling platform for Qatar Bitcoin mining partnership",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
