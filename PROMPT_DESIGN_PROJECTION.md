@@ -189,3 +189,4 @@ Une page de projection qui :
 **Commence par analyser la structure actuelle, puis propose une refonte complète du layout en respectant toutes les contraintes ci-dessus.**
 
 
+

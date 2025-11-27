@@ -334,6 +334,39 @@ a {
     transform: scale(1.05);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(138, 253, 129, 0.35);
   }
+
+  /* Slider blanc pour la section Configuration */
+  .slider-wrapper input[type="range"]::-webkit-slider-thumb {
+    background: white;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(255, 255, 255, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.15);
+  }
+  
+  .slider-wrapper input[type="range"]::-webkit-slider-thumb:hover {
+    background: white;
+    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.5), 0 0 0 3px rgba(255, 255, 255, 0.25);
+  }
+  
+  .slider-wrapper input[type="range"]::-webkit-slider-thumb:active {
+    background: white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.35);
+  }
+  
+  .slider-wrapper input[type="range"]::-moz-range-thumb {
+    background: white;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(255, 255, 255, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.15);
+  }
+  
+  .slider-wrapper input[type="range"]::-moz-range-thumb:hover {
+    background: white;
+    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.5), 0 0 0 3px rgba(255, 255, 255, 0.25);
+  }
+  
+  .slider-wrapper input[type="range"]::-moz-range-thumb:active {
+    background: white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.35);
+  }
   
   /* Track (barre) - Transparent pour laisser voir le wrapper */
   input[type="range"]::-webkit-slider-runnable-track,
@@ -498,4 +531,18 @@ a {
     page-break-inside: avoid;
     break-inside: avoid;
   }
+}
+
+/* Animation pour la barre de progression fluide */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
 }

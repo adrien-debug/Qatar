@@ -145,3 +145,4 @@ export default function CoinGeckoScraper({ onScenarioCreated }: CoinGeckoScraper
 }
 
 
+

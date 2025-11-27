@@ -136,6 +136,10 @@ export default function ProjectionCalculator() {
   const [hearstTableOpen, setHearstTableOpen] = useState(false);
   const [detailsProjectionsOpen, setDetailsProjectionsOpen] = useState(false);
   const [projections5AnsOpen, setProjections5AnsOpen] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [calculationProgress, setCalculationProgress] = useState(0);
+  const [resultsReady, setResultsReady] = useState(false);
+  const [showGlobalProjection, setShowGlobalProjection] = useState(false);
   
   // Charger les données depuis localStorage uniquement après le montage côté client
   useEffect(() => {
@@ -230,6 +234,72 @@ export default function ProjectionCalculator() {
     }
   };
 
+  // Fonction pour lancer les calculs avec barre de progression fluide
+  const handleCalculate = async () => {
+    setIsCalculating(true);
+    setCalculationProgress(0);
+    setResultsReady(false);
+
+    // Progression fluide et continue sur 1.5 secondes
+    const totalDuration = 1500; // 1.5 secondes
+    const updateInterval = 16; // ~60fps pour une animation fluide
+    const totalSteps = totalDuration / updateInterval;
+    const progressIncrement = 100 / totalSteps;
+
+    // Animation fluide de 0 à 100%
+    const startTime = Date.now();
+    const animateProgress = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min((elapsed / totalDuration) * 100, 100);
+      setCalculationProgress(progress);
+
+      if (progress < 100) {
+        requestAnimationFrame(animateProgress);
+      }
+    };
+
+    // Démarrer l'animation
+    requestAnimationFrame(animateProgress);
+
+    // Attendre la fin de l'animation
+    await new Promise(resolve => setTimeout(resolve, totalDuration));
+    
+    setIsCalculating(false);
+    setResultsReady(true);
+    setShowGlobalProjection(false);
+    
+    // Fermer tous les menus déroulants quand les résultats sont affichés
+    setQatarTableOpen(false);
+    setHearstTableOpen(false);
+    setDetailsProjectionsOpen(false);
+    setProjections5AnsOpen(false);
+
+    // Notification sonore et visuelle quand le calcul est terminé
+    if (typeof window !== 'undefined') {
+      // Notification du navigateur
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Calcul terminé', {
+          body: 'Les projections sont prêtes !',
+          icon: '/icon.svg'
+        });
+      } else if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            new Notification('Calcul terminé', {
+              body: 'Les projections sont prêtes !',
+              icon: '/icon.svg'
+            });
+          }
+        });
+      }
+    }
+
+    // Scroll automatique vers le haut de la page pour voir les résultats Qatar/Hearst
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 500);
+  };
+
   // S'assurer que selectedPhase est valide (entre 1 et la longueur de defaultPhases)
   const validPhaseIndex = Math.max(1, Math.min(selectedPhase, defaultPhases.length));
   const phase = defaultPhases[validPhaseIndex - 1];
@@ -300,6 +370,9 @@ export default function ProjectionCalculator() {
           revenueSharePercent: revenueShare,
           miningParams: yearMiningParams,
           opexMonthly,
+          mwCapexCost,
+          hearstResellPricePerKwh,
+          mwAllocatedToHearst,
         };
         const result = calculateDealA(inputs);
         return {
@@ -355,43 +428,46 @@ export default function ProjectionCalculator() {
 
   return (
     <div className="space-y-12">
-      {/* Header Ultra Premium */}
-      <div className="relative">
-        <div className="relative bg-gradient-to-br from-black via-gray-900 to-black rounded-2xl p-8 md:p-10">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="flex-1">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-hearst-green/30 to-hearst-green/10 rounded-2xl flex items-center justify-center border-2 border-hearst-green/50">
-                  <BarChart3 className="w-8 h-8 text-hearst-green" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 bg-gradient-to-r from-white via-hearst-green/90 to-white bg-clip-text text-transparent">
-                    Projection Financière
-                  </h1>
-                  <p className="text-lg text-gray-300">Configurez votre deal et visualisez les projections sur 5 ans</p>
-                </div>
-              </div>
-            </div>
-            {activeScenarioName && (
-              <div 
-                onClick={() => handleScenarioChange("")}
-                className="bg-gradient-to-br from-hearst-green/20 to-hearst-green/10 border-2 border-hearst-green/50 rounded-xl px-6 py-4 cursor-pointer"
-                title="Cliquer pour désactiver le scénario"
-              >
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-2 h-2 bg-hearst-green rounded-full animate-pulse"></div>
-                    <div className="text-xs text-gray-400 uppercase tracking-wide">Scénario actif</div>
+      {/* Header Ultra Premium - Caché quand les résultats sont prêts */}
+      {!resultsReady && (
+        <div className="relative">
+          <div className="relative bg-gradient-to-br from-black via-gray-900 to-black rounded-2xl p-8 md:p-10">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-hearst-green/30 to-hearst-green/10 rounded-2xl flex items-center justify-center border-2 border-hearst-green/50">
+                    <BarChart3 className="w-8 h-8 text-hearst-green" strokeWidth={2.5} />
                   </div>
-                  <div className="text-lg font-bold text-hearst-green">{activeScenarioName}</div>
+                  <div>
+                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 bg-gradient-to-r from-white via-hearst-green/90 to-white bg-clip-text text-transparent">
+                      Projection Financière
+                    </h1>
+                    <p className="text-lg text-gray-300">Configurez votre deal et visualisez les projections sur 5 ans</p>
+                  </div>
                 </div>
               </div>
-            )}
+              {activeScenarioName && (
+                <div 
+                  onClick={() => handleScenarioChange("")}
+                  className="bg-gradient-to-br from-hearst-green/20 to-hearst-green/10 border-2 border-hearst-green/50 rounded-xl px-6 py-4 cursor-pointer"
+                  title="Cliquer pour désactiver le scénario"
+                >
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-2 h-2 bg-hearst-green rounded-full animate-pulse"></div>
+                      <div className="text-xs text-gray-400 uppercase tracking-wide">Scénario actif</div>
+                    </div>
+                    <div className="text-lg font-bold text-hearst-green">{activeScenarioName}</div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Configuration du Deal - Ultra Premium */}
+      {/* Configuration du Deal - Ultra Premium - Caché quand les résultats sont prêts */}
+      {!resultsReady && (
       <div className="relative">
         <Card className="relative bg-gradient-to-br from-hearst-bg-secondary via-hearst-bg-secondary to-hearst-bg-tertiary shadow-2xl overflow-hidden">
           <div className="flex flex-col items-center justify-center mb-0 mt-6">
@@ -665,30 +741,62 @@ export default function ProjectionCalculator() {
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-white to-transparent"></div>
           <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-white to-transparent"></div>
           <button
-            onClick={() => {
-              // Scroll vers les résultats
-              const resultsSection = document.getElementById("projection-results");
-              if (resultsSection) {
-                resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
-              }
-            }}
-            className="group relative bg-transparent text-white font-semibold text-3xl hover:opacity-80 transition-all duration-300 flex items-center gap-4 w-full px-8"
+            onClick={handleCalculate}
+            disabled={isCalculating}
+            className="group relative bg-transparent text-white font-semibold text-3xl hover:opacity-80 transition-all duration-300 flex items-center gap-4 w-full px-8 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div className="flex-1 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent"></div>
             <div className="flex items-center gap-4">
               <Activity className="w-10 h-10" strokeWidth={2.5} />
-              <span>Lancer le Calcul</span>
+              <span>{isCalculating ? "Calcul en cours..." : "Lancer le Calcul"}</span>
             </div>
             <div className="flex-1 h-0.5 bg-gradient-to-l from-transparent via-white to-transparent"></div>
           </button>
         </div>
+
+        {/* Barre de progression fluide */}
+        {isCalculating && (
+          <div className="mt-6 mb-6 px-8">
+            <div className="relative w-full h-4 bg-hearst-bg-tertiary/50 rounded-full overflow-hidden border-2 border-hearst-green/40 shadow-inner">
+              {/* Barre de progression animée */}
+              <div
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-hearst-green via-[#A3FF8B] to-hearst-green rounded-full shadow-lg"
+                style={{ 
+                  width: `${calculationProgress}%`,
+                  transition: 'width 0.05s linear'
+                }}
+              >
+                {/* Effet de brillance animé */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+                {/* Particules animées */}
+                <div className="absolute inset-0">
+                  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+                </div>
+              </div>
+              {/* Texte du pourcentage */}
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <span className="text-sm font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                  {Math.round(Math.max(0, Math.min(100, calculationProgress)))}%
+                </span>
+              </div>
+            </div>
+            {/* Message de progression */}
+            <div className="text-center text-hearst-text-secondary text-sm mt-3 font-medium">
+              {calculationProgress < 100 ? "Calcul en cours..." : "Terminé !"}
+            </div>
+          </div>
+        )}
+
         <div className="pb-[49px]"></div>
       </Card>
       </div>
+      )}
 
-      {/* Tableau de projection - Premium */}
+      {/* Tableau de projection - Premium - Qatar uniquement */}
+      {resultsReady && (
       <div id="projection-results">
         <Card className="overflow-x-auto bg-gradient-to-br from-hearst-bg-secondary to-hearst-bg-tertiary overflow-hidden relative">
+          <div id="qatar-table"></div>
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#8A1538] to-transparent z-10"></div>
           <div className="flex flex-col items-center justify-center mb-0 mt-6">
             <button
@@ -834,8 +942,11 @@ export default function ProjectionCalculator() {
           </div>
         </div>
       </Card>
+      </div>
+      )}
 
-      {/* Tableau de projection - Dupliqué */}
+      {/* Tableau Hearst */}
+      {resultsReady && (
       <Card className="overflow-x-auto bg-gradient-to-br from-hearst-bg-secondary to-hearst-bg-tertiary mt-12 overflow-hidden relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-hearst-green to-transparent z-10"></div>
         <div className="flex flex-col items-center justify-center mb-0 mt-6">
@@ -982,15 +1093,40 @@ export default function ProjectionCalculator() {
           </div>
         </div>
       </Card>
+      )}
+
+      {/* Flèche de navigation vers Global Projection - Affichée seulement après les résultats Qatar/Hearst */}
+      {resultsReady && !showGlobalProjection && (
+        <div className="flex justify-center items-center py-8">
+          <button
+            onClick={() => {
+              setShowGlobalProjection(true);
+              setTimeout(() => {
+                const globalProjectionTitle = document.getElementById("global-projection-title");
+                if (globalProjectionTitle) {
+                  globalProjectionTitle.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }, 100);
+            }}
+            className="flex flex-col items-center gap-2 text-white hover:text-hearst-green transition-colors duration-300 animate-bounce"
+          >
+            <ChevronDown className="w-8 h-8" strokeWidth={2.5} />
+            <span className="text-sm font-semibold">Global Projection</span>
+          </button>
+        </div>
+      )}
 
       {/* Titre Global Projection */}
-      <div className="mt-36 mb-8">
+      {resultsReady && showGlobalProjection && (
+      <div id="global-projection-title" className="mt-36 mb-8">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-center">
           Global Projection
         </h1>
       </div>
+      )}
 
       {/* Projections sur 5 ans - Premium */}
+      {resultsReady && showGlobalProjection && (
       <Card className="overflow-x-auto bg-gradient-to-br from-hearst-bg-secondary to-hearst-bg-tertiary mt-0 overflow-hidden relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#3498db] to-transparent z-10"></div>
         <div className="flex flex-col items-center justify-center mb-0 mt-6">
@@ -1048,8 +1184,10 @@ export default function ProjectionCalculator() {
         </div>
         )}
       </Card>
+      )}
 
       {/* Tableau Détails des Projections - Premium */}
+      {resultsReady && showGlobalProjection && (
       <Card className="overflow-x-auto bg-gradient-to-br from-hearst-bg-secondary to-hearst-bg-tertiary mt-12 overflow-hidden relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#3498db] to-transparent z-10"></div>
         <div className="flex flex-col items-center justify-center mb-0 mt-6">
@@ -1146,8 +1284,10 @@ export default function ProjectionCalculator() {
         </div>
         )}
       </Card>
+      )}
 
       {/* Bouton Premium pour Générer le Rapport */}
+      {resultsReady && showGlobalProjection && (
       <Card className="bg-gradient-to-br from-hearst-bg-secondary via-hearst-bg-tertiary to-hearst-bg-secondary relative overflow-hidden mt-12">
         <div className="relative z-10 p-6">
           <div className="flex items-center justify-between gap-6">
@@ -1172,8 +1312,10 @@ export default function ProjectionCalculator() {
           </div>
         </div>
       </Card>
+      )}
 
-      {/* Footer avec détails Hearst */}
+      {/* Footer avec détails Hearst - Caché quand les résultats sont prêts et Global Projection n'est pas affiché */}
+      {(!resultsReady || showGlobalProjection) && (
       <footer className="h-[100px] bg-hearst-bg-secondary border-t border-hearst-grey-100/30 flex items-center justify-between px-8 mt-12">
         <div className="flex items-center gap-4 text-hearst-text-secondary text-xs md:text-sm">
           <div className="flex items-center gap-2">
@@ -1187,10 +1329,11 @@ export default function ProjectionCalculator() {
           <span>© 2024 Hearst Solutions. All rights reserved.</span>
         </div>
       </footer>
-      </div>
+      )}
     </div>
   );
 }
+
 
 
 
