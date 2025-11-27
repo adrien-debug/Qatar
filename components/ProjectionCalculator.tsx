@@ -58,9 +58,9 @@ export default function ProjectionCalculator() {
   
   // Valeurs min/max pour les sliders
   const revenueShareMin = 0;
-  const revenueShareMax = 50;
+  const revenueShareMax = 30;
   const mwAllocatedMin = 0;
-  const mwAllocatedMax = 50;
+  const mwAllocatedMax = 30;
   const revenueSliderRef = useRef<HTMLInputElement>(null);
   const mwSliderRef = useRef<HTMLInputElement>(null);
   
@@ -132,9 +132,10 @@ export default function ProjectionCalculator() {
   // Charger les scénarios disponibles
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>("");
-  const [qatarTableOpen, setQatarTableOpen] = useState(true);
-  const [hearstTableOpen, setHearstTableOpen] = useState(true);
-  const [detailsProjectionsOpen, setDetailsProjectionsOpen] = useState(true);
+  const [qatarTableOpen, setQatarTableOpen] = useState(false);
+  const [hearstTableOpen, setHearstTableOpen] = useState(false);
+  const [detailsProjectionsOpen, setDetailsProjectionsOpen] = useState(false);
+  const [projections5AnsOpen, setProjections5AnsOpen] = useState(false);
   
   // Charger les données depuis localStorage uniquement après le montage côté client
   useEffect(() => {
@@ -392,72 +393,82 @@ export default function ProjectionCalculator() {
 
       {/* Configuration du Deal - Ultra Premium */}
       <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-hearst-green/5 to-transparent blur-2xl"></div>
         <Card className="relative bg-gradient-to-br from-hearst-bg-secondary via-hearst-bg-secondary to-hearst-bg-tertiary shadow-2xl overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#8A1538] to-transparent z-10"></div>
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-8 h-8 bg-gradient-to-br from-hearst-green/30 to-hearst-green/10 rounded-xl flex items-center justify-center border-2 border-hearst-green/50">
-              <Settings2 className="w-4 h-4 text-hearst-green" strokeWidth={2.5} />
+          <div className="flex flex-col items-center justify-center mb-0 mt-6">
+            <div className="flex items-center justify-center gap-4 w-full mb-2">
+              <div className="flex-1 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent"></div>
+              <h2 className="text-3xl md:text-4xl font-bold text-white text-center">
+                Configuration du Deal
+              </h2>
+              <div className="flex-1 h-0.5 bg-gradient-to-l from-transparent via-white to-transparent"></div>
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white">Configuration du Deal</h2>
           </div>
         
           {/* Grille harmonisée : Jauges */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 mt-10">
             {/* Jauge Share Revenu - Ultra Premium */}
             <div 
               onClick={() => setDealType("revenue")}
               className={`
-                relative cursor-pointer rounded-2xl p-4 border-2 overflow-hidden flex flex-col items-center justify-center h-full min-h-[200px] transition-all duration-300
-                ${dealType === "revenue" 
-                    ? "border-transparent bg-gradient-to-br from-hearst-green/20 via-hearst-bg-secondary to-hearst-bg-secondary hover:border-hearst-green/30" 
-                    : "border-transparent bg-hearst-bg-secondary hover:border-hearst-grey-100/30"
-                  }
+                relative cursor-pointer rounded-2xl p-6 overflow-hidden flex flex-col items-center justify-center h-full min-h-[260px] transition-all duration-300 bg-hearst-bg-secondary
               `}
             >
+              {/* Premium Sidebar Left - Visible when selected */}
+              <div className={`
+                absolute -left-1 top-0 bottom-0 w-1.5 transition-all duration-500 ease-in-out z-0
+                ${dealType === "revenue" 
+                  ? "bg-gradient-to-b from-transparent via-white to-transparent opacity-60 shadow-[0_0_15px_rgba(255,255,255,0.4)] blur-[1px]" 
+                  : "opacity-0"
+                }
+              `}></div>
+              
+              {/* Premium Sidebar Right - Visible when selected */}
+              <div className={`
+                absolute -right-1 top-0 bottom-0 w-1.5 transition-all duration-500 ease-in-out z-0
+                ${dealType === "revenue" 
+                  ? "bg-gradient-to-b from-transparent via-white to-transparent opacity-60 shadow-[0_0_15px_rgba(255,255,255,0.4)] blur-[1px]" 
+                  : "opacity-0"
+                }
+              `}></div>
+              
               <div className="relative z-10 text-center w-full flex flex-col items-center justify-center">
-                <div className="text-xs font-semibold text-hearst-text-secondary mb-3 uppercase tracking-wider">
+                <div className="text-base font-semibold text-hearst-text-secondary mb-6 uppercase tracking-wider">
                   Share Revenu
                 </div>
-                <div className="relative w-20 h-20 mx-auto mb-3">
-                  <svg className="transform -rotate-90 w-20 h-20 relative z-10">
+                <div className="relative w-48 h-48 mx-auto mb-6">
+                  <svg className="transform -rotate-90 w-48 h-48 relative z-10" viewBox="0 0 80 80">
                     <circle
                       cx="40"
                       cy="40"
                       r="35"
-                      stroke="currentColor"
-                      strokeWidth="5"
+                      stroke="#8A1538"
+                      strokeWidth="6"
                       fill="none"
-                      className="text-hearst-grey-100/30"
+                      className="opacity-100"
+                      style={{ filter: 'drop-shadow(0 0 2px rgba(138, 21, 56, 0.2))' }}
                     />
                     <circle
                       cx="40"
                       cy="40"
                       r="35"
-                      stroke="url(#revenueGradient)"
-                      strokeWidth="5"
+                      stroke="#7CFF5A"
+                      strokeWidth="6"
                       fill="none"
                       strokeDasharray={`${2 * Math.PI * 35}`}
                       strokeDashoffset={`${2 * Math.PI * 35 * (1 - (revenueShare - revenueShareMin) / (revenueShareMax - revenueShareMin))}`}
                       strokeLinecap="round"
-                      className="transition-all duration-500 drop-shadow-lg"
-                      style={{ filter: 'drop-shadow(0 0 8px rgba(138, 253, 129, 0.5))' }}
+                      className="transition-all duration-500"
+                      style={{ filter: 'drop-shadow(0 0 2px rgba(124, 255, 90, 0.2))' }}
                     />
-                    <defs>
-                      <linearGradient id="revenueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#8afd81" stopOpacity="1" />
-                        <stop offset="100%" stopColor="#6fdc66" stopOpacity="1" />
-                      </linearGradient>
-                    </defs>
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center z-20">
                     <div className="text-center">
-                      <div className="text-2xl md:text-3xl font-bold text-white">{revenueShare}</div>
-                      <div className="text-xs text-hearst-text-secondary font-semibold">%</div>
+                      <div className="text-4xl md:text-5xl font-bold text-white">{revenueShare}</div>
+                      <div className="text-base text-hearst-text-secondary font-semibold">%</div>
                     </div>
                   </div>
                 </div>
-                <div className={`text-xs font-semibold ${dealType === "revenue" ? "text-hearst-green" : "text-hearst-text-secondary"}`}>
+                <div className={`text-base font-semibold ${dealType === "revenue" ? "text-white" : "text-hearst-text-secondary"}`}>
                   {dealType === "revenue" ? "✓ Actif" : "Cliquez pour activer"}
                 </div>
               </div>
@@ -467,56 +478,65 @@ export default function ProjectionCalculator() {
             <div 
               onClick={() => setDealType("mw")}
               className={`
-                relative cursor-pointer rounded-2xl p-4 border-2 overflow-hidden flex flex-col items-center justify-center h-full min-h-[200px] transition-all duration-300
-                ${dealType === "mw" 
-                    ? "border-transparent bg-gradient-to-br from-hearst-green/20 via-hearst-bg-secondary to-hearst-bg-secondary hover:border-hearst-green/30" 
-                    : "border-transparent bg-hearst-bg-secondary hover:border-hearst-grey-100/30"
-                  }
+                relative cursor-pointer rounded-2xl p-6 overflow-hidden flex flex-col items-center justify-center h-full min-h-[260px] transition-all duration-300 bg-hearst-bg-secondary
               `}
             >
+              {/* Premium Sidebar Left - Visible when selected */}
+              <div className={`
+                absolute -left-1 top-0 bottom-0 w-1.5 transition-all duration-500 ease-in-out z-0
+                ${dealType === "mw" 
+                  ? "bg-gradient-to-b from-transparent via-white to-transparent opacity-60 shadow-[0_0_15px_rgba(255,255,255,0.4)] blur-[1px]" 
+                  : "opacity-0"
+                }
+              `}></div>
+              
+              {/* Premium Sidebar Right - Visible when selected */}
+              <div className={`
+                absolute -right-1 top-0 bottom-0 w-1.5 transition-all duration-500 ease-in-out z-0
+                ${dealType === "mw" 
+                  ? "bg-gradient-to-b from-transparent via-white to-transparent opacity-60 shadow-[0_0_15px_rgba(255,255,255,0.4)] blur-[1px]" 
+                  : "opacity-0"
+                }
+              `}></div>
+              
               <div className="relative z-10 text-center w-full flex flex-col items-center justify-center">
-                <div className="text-xs font-semibold text-hearst-text-secondary mb-3 uppercase tracking-wider">
+                <div className="text-base font-semibold text-hearst-text-secondary mb-6 uppercase tracking-wider">
                   MW Allocated
                 </div>
-                <div className="relative w-20 h-20 mx-auto mb-3">
-                  <svg className="transform -rotate-90 w-20 h-20 relative z-10">
+                <div className="relative w-48 h-48 mx-auto mb-6">
+                  <svg className="transform -rotate-90 w-48 h-48 relative z-10" viewBox="0 0 80 80">
                     <circle
                       cx="40"
                       cy="40"
                       r="35"
-                      stroke="currentColor"
-                      strokeWidth="5"
+                      stroke="#8A1538"
+                      strokeWidth="6"
                       fill="none"
-                      className="text-hearst-grey-100/30"
+                      className="opacity-100"
+                      style={{ filter: 'drop-shadow(0 0 2px rgba(138, 21, 56, 0.2))' }}
                     />
                     <circle
                       cx="40"
                       cy="40"
                       r="35"
-                      stroke="url(#mwGradient)"
-                      strokeWidth="5"
+                      stroke="#7CFF5A"
+                      strokeWidth="6"
                       fill="none"
                       strokeDasharray={`${2 * Math.PI * 35}`}
                       strokeDashoffset={`${2 * Math.PI * 35 * (1 - (mwAllocated - mwAllocatedMin) / (mwAllocatedMax - mwAllocatedMin))}`}
                       strokeLinecap="round"
-                      className="transition-all duration-500 drop-shadow-lg"
-                      style={{ filter: 'drop-shadow(0 0 8px rgba(138, 253, 129, 0.5))' }}
+                      className="transition-all duration-500"
+                      style={{ filter: 'drop-shadow(0 0 2px rgba(124, 255, 90, 0.2))' }}
                     />
-                    <defs>
-                      <linearGradient id="mwGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#8afd81" stopOpacity="1" />
-                        <stop offset="100%" stopColor="#6fdc66" stopOpacity="1" />
-                      </linearGradient>
-                    </defs>
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center z-20">
                     <div className="text-center">
-                      <div className="text-2xl md:text-3xl font-bold text-white">{mwAllocated}</div>
-                      <div className="text-xs text-hearst-text-secondary font-semibold">%</div>
+                      <div className="text-4xl md:text-5xl font-bold text-white">{mwAllocated}</div>
+                      <div className="text-base text-hearst-text-secondary font-semibold">%</div>
                     </div>
                   </div>
                 </div>
-                <div className={`text-xs font-semibold transition-all ${dealType === "mw" ? "text-hearst-green" : "text-hearst-text-secondary"}`}>
+                <div className={`text-base font-semibold transition-all ${dealType === "mw" ? "text-white" : "text-hearst-text-secondary"}`}>
                   {dealType === "mw" ? "✓ Actif" : "Cliquez pour activer"}
                 </div>
               </div>
@@ -525,16 +545,15 @@ export default function ProjectionCalculator() {
           </div>
 
         {/* Sliders - Harmonisés */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8 mb-10">
           {dealType === "revenue" ? (
             <div className="md:col-span-2 flex justify-center">
               <div className="w-full max-w-md">
-                <label className="block text-sm font-medium text-hearst-text-secondary mb-4 text-center">
-                  Type Share Revenu - Editable (%)
-                </label>
                 <div className="flex items-center gap-3">
+                  <span className="text-white text-sm font-semibold">0%</span>
                   <div className="slider-wrapper flex-1" style={{
-                    '--slider-progress': `${((revenueShare - revenueShareMin) / (revenueShareMax - revenueShareMin)) * 100}%`
+                    '--slider-progress': `${((revenueShare - revenueShareMin) / (revenueShareMax - revenueShareMin)) * 100}%`,
+                    'background': '#8A1538'
                   } as React.CSSProperties}>
                     <input
                       ref={revenueSliderRef}
@@ -547,29 +566,18 @@ export default function ProjectionCalculator() {
                       className="w-full"
                     />
                   </div>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      min={revenueShareMin}
-                      max={revenueShareMax}
-                      value={revenueShare}
-                      onChange={(e) => setRevenueShare(parseInt(e.target.value) || 0)}
-                      className="w-20 px-3 py-2 border-2 border-hearst-grey-100 bg-hearst-bg-secondary rounded-lg text-center font-bold text-hearst-text focus:border-hearst-green"
-                    />
-                    <span className="text-lg font-bold text-hearst-green">%</span>
-                  </div>
+                  <span className="text-white text-sm font-semibold">30%</span>
                 </div>
               </div>
             </div>
           ) : (
             <div className="md:col-span-2 flex justify-center">
               <div className="w-full max-w-md">
-                <label className="block text-sm font-medium text-hearst-text-secondary mb-4 text-center">
-                  Type MW Allocated - Editable (%)
-                </label>
                 <div className="flex items-center gap-3">
+                  <span className="text-white text-sm font-semibold">0%</span>
                   <div className="slider-wrapper flex-1" style={{
-                    '--slider-progress': `${((mwAllocated - mwAllocatedMin) / (mwAllocatedMax - mwAllocatedMin)) * 100}%`
+                    '--slider-progress': `${((mwAllocated - mwAllocatedMin) / (mwAllocatedMax - mwAllocatedMin)) * 100}%`,
+                    'background': '#8A1538'
                   } as React.CSSProperties}>
                     <input
                       ref={mwSliderRef}
@@ -582,132 +590,100 @@ export default function ProjectionCalculator() {
                       className="w-full"
                     />
                   </div>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      min={mwAllocatedMin}
-                      max={mwAllocatedMax}
-                      value={mwAllocated}
-                      onChange={(e) => setMwAllocated(parseInt(e.target.value) || 0)}
-                      className="w-20 px-3 py-2 border-2 border-hearst-grey-100 bg-hearst-bg-secondary rounded-lg text-center font-bold text-hearst-text focus:border-hearst-green"
-                    />
-                    <span className="text-lg font-bold text-hearst-green">%</span>
-                  </div>
+                  <span className="text-white text-sm font-semibold">30%</span>
                 </div>
               </div>
             </div>
           )}
         </div>
-      </Card>
-      </div>
 
-      {/* Récapitulatif des Conditions du Deal */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-hearst-green/5 to-transparent blur-2xl"></div>
-        <Card className="relative bg-gradient-to-br from-hearst-bg-secondary via-hearst-bg-secondary to-hearst-bg-tertiary shadow-2xl overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#8A1538] to-transparent z-10"></div>
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-10 h-10 bg-gradient-to-br from-hearst-green/30 to-hearst-green/10 rounded-xl flex items-center justify-center border-2 border-hearst-green/50">
-              <FileText className="w-5 h-5 text-hearst-green" strokeWidth={2.5} />
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white">Récapitulatif des Conditions du Deal</h2>
-          </div>
+        {/* Séparateur */}
+        <div className="border-t border-hearst-grey-100/30 my-10"></div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {/* Type de Deal */}
-            <div className="bg-hearst-bg-tertiary/50 rounded-xl p-4 border-2 border-transparent hover:border-hearst-grey-100/30 transition-all duration-300 cursor-pointer">
-              <div className="flex items-center gap-2 mb-2">
-                <Percent className="w-4 h-4 text-hearst-text-secondary" />
-                <div className="text-xs font-semibold text-hearst-text-secondary uppercase tracking-wider">
-                  Type de Deal
-                </div>
+        {/* Récapitulatif */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+          {/* Type de Deal */}
+          <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
+            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-white/60 to-transparent opacity-50"></div>
+            <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-white/60 to-transparent opacity-50"></div>
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/60 to-transparent opacity-0 group-hover:opacity-50 transition-opacity duration-500 ease-in-out"></div>
+            <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
+              <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
+                <Percent className="w-10 h-10 text-white" strokeWidth={2.5} />
               </div>
-              <div className="text-lg font-bold text-white">
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-semibold text-white uppercase tracking-wide">Type de Deal</div>
+              <div className="text-2xl font-bold text-white mt-4">
                 {dealType === "revenue" ? "Share Revenu" : "MW Allocated"}
               </div>
             </div>
+          </div>
 
-            {/* Valeur du Deal */}
-            <div className="bg-hearst-bg-tertiary/50 rounded-xl p-4 border-2 border-transparent hover:border-hearst-grey-100/30 transition-all duration-300 cursor-pointer">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-hearst-text-secondary" />
-                <div className="text-xs font-semibold text-hearst-text-secondary uppercase tracking-wider">
-                  {dealType === "revenue" ? "Share Revenu" : "MW Allocated"}
-                </div>
+          {/* Valeur du Deal */}
+          <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
+            <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-white/60 to-transparent opacity-50"></div>
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/60 to-transparent opacity-0 group-hover:opacity-50 transition-opacity duration-500 ease-in-out"></div>
+            <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
+              <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-10 h-10 text-white" strokeWidth={2.5} />
               </div>
-              <div className="text-lg font-bold text-hearst-green">
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-semibold text-white uppercase tracking-wide">{dealType === "revenue" ? "Share Revenu" : "MW Allocated"}</div>
+              <div className="text-2xl font-bold text-white mt-4">
                 {dealType === "revenue" ? `${revenueShare}%` : `${mwAllocated}%`}
               </div>
             </div>
+          </div>
 
-            {/* Scénario Actif */}
-            <div className="bg-hearst-bg-tertiary/50 rounded-xl p-4 border-2 border-transparent hover:border-hearst-grey-100/30 transition-all duration-300 cursor-pointer">
-              <div className="flex items-center gap-2 mb-2">
-                <BarChart3 className="w-4 h-4 text-hearst-text-secondary" />
-                <div className="text-xs font-semibold text-hearst-text-secondary uppercase tracking-wider">
-                  Scénario
-                </div>
+          {/* Scénario Actif */}
+          <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
+            <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-white to-transparent"></div>
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
+            <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
+              <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-10 h-10 text-white" strokeWidth={2.5} />
               </div>
-              <div className="text-lg font-bold text-white">
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-semibold text-white uppercase tracking-wide">Scénario</div>
+              <div className="text-2xl font-bold text-white mt-4">
                 {activeScenario?.name || "Par défaut"}
               </div>
               {activeScenario && (
-                <div className="text-xs text-hearst-text-secondary mt-1">
+                <div className="text-lg text-white mt-1 opacity-75">
                   BTC: ${safeToFixed(miningParams.btcPrice, 0)}k
                 </div>
               )}
             </div>
           </div>
+        </div>
 
-          {/* Phase de Déploiement - Section dédiée */}
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-6">
-              <Zap className="w-5 h-5 text-hearst-green" />
-              <div className="text-sm font-semibold text-hearst-text-secondary uppercase tracking-wider">
-                Phase de Déploiement
-              </div>
+        {/* Bouton Lancer le Calcul */}
+        <div className="flex justify-center mt-6 relative">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-white to-transparent"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-white to-transparent"></div>
+          <button
+            onClick={() => {
+              // Scroll vers les résultats
+              const resultsSection = document.getElementById("projection-results");
+              if (resultsSection) {
+                resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+              }
+            }}
+            className="group relative bg-transparent text-white font-semibold text-3xl hover:opacity-80 transition-all duration-300 flex items-center gap-4 w-full px-8"
+          >
+            <div className="flex-1 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent"></div>
+            <div className="flex items-center gap-4">
+              <Activity className="w-10 h-10" strokeWidth={2.5} />
+              <span>Lancer le Calcul</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {defaultPhases.map((phase, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedPhase(index + 1)}
-                    className={`
-                      px-4 py-3 rounded-lg font-medium text-sm transition-all duration-300
-                      ${
-                        selectedPhase === index + 1
-                          ? "bg-hearst-green text-black font-bold border-2 border-transparent hover:border-hearst-green shadow-lg shadow-hearst-green/50"
-                          : "bg-hearst-bg-secondary text-hearst-text-secondary border-2 border-transparent hover:border-hearst-green/50"
-                      }
-                    `}
-                >
-                  <div className="font-bold text-base mb-1">{phase.mw}MW</div>
-                  <div className="text-xs opacity-90">{phase.timeline}</div>
-                  <div className="text-xs opacity-75 mt-1">({phase.status})</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Bouton Lancer le Calcul */}
-          <div className="flex justify-center mt-8">
-            <button
-              onClick={() => {
-                // Scroll vers les résultats
-                const resultsSection = document.getElementById("projection-results");
-                if (resultsSection) {
-                  resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
-              }}
-              className="group relative px-8 py-4 bg-gradient-to-r from-hearst-green to-hearst-green/80 hover:from-hearst-green/90 hover:to-hearst-green/70 text-black font-bold text-lg rounded-xl border-2 border-hearst-green shadow-lg hover:shadow-hearst-green/50 transition-all duration-300 transform hover:scale-105 flex items-center gap-3"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-hearst-green/20 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <Activity className="w-5 h-5 relative z-10" strokeWidth={2.5} />
-              <span className="relative z-10">Lancer le Calcul</span>
-              <ArrowUpRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
-            </button>
-          </div>
-        </Card>
+            <div className="flex-1 h-0.5 bg-gradient-to-l from-transparent via-white to-transparent"></div>
+          </button>
+        </div>
+        <div className="pb-[49px]"></div>
+      </Card>
       </div>
 
       {/* Tableau de projection - Premium */}
@@ -781,9 +757,9 @@ export default function ProjectionCalculator() {
         )}
 
         {/* Total Investment - Décomposition */}
-        <div className="mt-0 pt-10 border-t-2 border-hearst-grey-100/30">
-          <h3 className="text-xl md:text-2xl font-bold mb-8 text-white flex items-center gap-3 ml-6">
-            <span className="text-4xl">🇶🇦</span>
+        <div className="mt-0 pt-2 border-t-2 border-hearst-grey-100/30">
+          <h3 className="text-2xl md:text-3xl font-bold mb-8 text-white flex items-center gap-3 ml-6">
+            <span className="text-5xl">🇶🇦</span>
             Total Investment - Décomposition
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-4">
@@ -798,8 +774,8 @@ export default function ProjectionCalculator() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-sm font-semibold text-white uppercase tracking-wide">Infrastructure</div>
-                <div className="text-xl font-bold text-white mt-4">
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">Infrastructure</div>
+                <div className="text-2xl font-bold text-white mt-4">
                   ${safeToFixed((defaultHardwareCosts.infrastructurePerMW + defaultHardwareCosts.coolingPerMW + defaultHardwareCosts.networkingPerMW) * phase.mw / 1000000, 2)}M
                 </div>
               </div>
@@ -812,11 +788,11 @@ export default function ProjectionCalculator() {
               <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
                 <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
                   <Activity className="w-10 h-10 text-[#8A1538]" strokeWidth={2.5} />
-              </div>
+                </div>
               </div>
               <div className="text-center">
-                <div className="text-sm font-semibold text-white uppercase tracking-wide">Hardware</div>
-                <div className="text-xl font-bold text-white mt-4">
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">Hardware</div>
+                <div className="text-2xl font-bold text-white mt-4">
                   ${safeToFixed(defaultHardwareCosts.asicPerMW * phase.mw / 1000000, 2)}M
                 </div>
               </div>
@@ -832,8 +808,8 @@ export default function ProjectionCalculator() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-sm font-semibold text-white uppercase tracking-wide">OPEX Deployment</div>
-                <div className="text-xl font-bold text-white mt-4">
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">OPEX Deployment</div>
+                <div className="text-2xl font-bold text-white mt-4">
                   ${safeToFixed(opexMonthly * 3 / 1000000, 2)}M
                 </div>
               </div>
@@ -846,11 +822,11 @@ export default function ProjectionCalculator() {
               <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
                 <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
                   <DollarSign className="w-10 h-10 text-[#8A1538]" strokeWidth={2.5} />
-              </div>
+                </div>
               </div>
               <div className="text-center">
-                <div className="text-sm font-semibold text-white uppercase tracking-wide">Total Investment</div>
-                <div className="text-xl font-bold text-white mt-4">
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">Total Investment</div>
+                <div className="text-2xl font-bold text-white mt-4">
                   ${safeToFixed(capex / 1000000, 2)}M
                 </div>
               </div>
@@ -929,9 +905,9 @@ export default function ProjectionCalculator() {
         )}
 
         {/* Total Investment - Décomposition */}
-        <div className="mt-10 pt-10 border-t-2 border-hearst-grey-100/30">
-          <h3 className="text-xl md:text-2xl font-bold mb-8 text-white flex items-center justify-center gap-3">
-            <DollarSign className="w-6 h-6 text-hearst-green" />
+        <div className="mt-0 pt-2 border-t-2 border-hearst-grey-100/30">
+          <h3 className="text-2xl md:text-3xl font-bold mb-8 text-white flex items-center gap-3 ml-6">
+            <DollarSign className="w-8 h-8 text-hearst-green" />
             Total Investment - Décomposition
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-4">
@@ -946,8 +922,8 @@ export default function ProjectionCalculator() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-sm font-semibold text-white uppercase tracking-wide">Infrastructure</div>
-                <div className="text-xl font-bold text-white mt-4">
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">Infrastructure</div>
+                <div className="text-2xl font-bold text-white mt-4">
                   ${safeToFixed((defaultHardwareCosts.infrastructurePerMW + defaultHardwareCosts.coolingPerMW + defaultHardwareCosts.networkingPerMW) * phase.mw / 1000000, 2)}M
                 </div>
               </div>
@@ -960,11 +936,11 @@ export default function ProjectionCalculator() {
               <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
                 <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
                   <Activity className="w-10 h-10 text-hearst-green" strokeWidth={2.5} />
-              </div>
+                </div>
               </div>
               <div className="text-center">
-                <div className="text-sm font-semibold text-white uppercase tracking-wide">Hardware</div>
-                <div className="text-xl font-bold text-white mt-4">
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">Hardware</div>
+                <div className="text-2xl font-bold text-white mt-4">
                   ${safeToFixed(defaultHardwareCosts.asicPerMW * phase.mw / 1000000, 2)}M
                 </div>
               </div>
@@ -980,8 +956,8 @@ export default function ProjectionCalculator() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-sm font-semibold text-white uppercase tracking-wide">OPEX Deployment</div>
-                <div className="text-xl font-bold text-white mt-4">
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">OPEX Deployment</div>
+                <div className="text-2xl font-bold text-white mt-4">
                   ${safeToFixed(opexMonthly * 3 / 1000000, 2)}M
                 </div>
               </div>
@@ -994,11 +970,11 @@ export default function ProjectionCalculator() {
               <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
                 <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
                   <DollarSign className="w-10 h-10 text-hearst-green" strokeWidth={2.5} />
-              </div>
+                </div>
               </div>
               <div className="text-center">
-                <div className="text-sm font-semibold text-white uppercase tracking-wide">Total Investment</div>
-                <div className="text-xl font-bold text-white mt-4">
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">Total Investment</div>
+                <div className="text-2xl font-bold text-white mt-4">
                   ${safeToFixed(capex / 1000000, 2)}M
                 </div>
               </div>
@@ -1007,41 +983,70 @@ export default function ProjectionCalculator() {
         </div>
       </Card>
 
+      {/* Titre Global Projection */}
+      <div className="mt-36 mb-8">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-center">
+          Global Projection
+        </h1>
+      </div>
+
       {/* Projections sur 5 ans - Premium */}
-      <Card className="bg-hearst-bg-secondary">
-        <h2 className="text-2xl md:text-3xl font-bold mb-10 mt-6 ml-6 text-white text-left">
-          Projections sur 5 Ans
-        </h2>
-        <div className="bg-gray-800/50 rounded-lg p-6">
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={projectionData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
-              <XAxis dataKey="year" stroke="#E2E8F0" />
-              <YAxis label={{ value: "Revenue/Profit (M$)", angle: -90, position: "insideLeft" }} stroke="#E2E8F0" />
-              <Tooltip 
-                formatter={(value: number) => `$${safeToFixed(value, 2)}M`}
-                contentStyle={{ backgroundColor: '#1A202C', border: '1px solid #4A5568', borderRadius: '8px' }}
-                labelStyle={{ color: '#E2E8F0' }}
-              />
-              <Legend wrapperStyle={{ color: '#E2E8F0' }} />
-            <Line
-              type="monotone"
-              dataKey="hearst"
-              stroke="#A3FF8B"
-              strokeWidth={3}
-              name="HEARST"
-            />
-            <Line
-              type="monotone"
-              dataKey="total"
-              stroke="#A3FF8B"
-              strokeWidth={2}
-              strokeDasharray="5 5"
-              name="Total"
-            />
-          </LineChart>
-        </ResponsiveContainer>
+      <Card className="overflow-x-auto bg-gradient-to-br from-hearst-bg-secondary to-hearst-bg-tertiary mt-0 overflow-hidden relative">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#3498db] to-transparent z-10"></div>
+        <div className="flex flex-col items-center justify-center mb-0 mt-6">
+          <button
+            onClick={() => setProjections5AnsOpen(!projections5AnsOpen)}
+            className="flex flex-col items-center hover:opacity-80 transition-opacity w-full"
+          >
+            <div className="flex items-center justify-center gap-4 w-full mb-2">
+              <div className="flex-1 h-0.5 bg-gradient-to-r from-transparent via-[#3498db] to-transparent"></div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white text-center">
+                Projections sur 5 Ans
+              </h2>
+              <div className="flex-1 h-0.5 bg-gradient-to-l from-transparent via-[#3498db] to-transparent"></div>
+            </div>
+            <div className="flex items-center justify-center">
+              {projections5AnsOpen ? (
+                <ChevronUp className="w-16 h-16 text-[#3498db]" />
+              ) : (
+                <ChevronDown className="w-16 h-16 text-[#3498db]" />
+              )}
+            </div>
+          </button>
         </div>
+        
+        {projections5AnsOpen && (
+        <div className="bg-gray-800/50 rounded-lg p-6 mt-6">
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={projectionData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
+                <XAxis dataKey="year" stroke="#E2E8F0" />
+                <YAxis label={{ value: "Revenue/Profit (M$)", angle: -90, position: "insideLeft" }} stroke="#E2E8F0" />
+                <Tooltip 
+                  formatter={(value: number) => `$${safeToFixed(value, 2)}M`}
+                  contentStyle={{ backgroundColor: '#1A202C', border: '1px solid #4A5568', borderRadius: '8px' }}
+                  labelStyle={{ color: '#E2E8F0' }}
+                />
+                <Legend wrapperStyle={{ color: '#E2E8F0' }} />
+              <Line
+                type="monotone"
+                dataKey="hearst"
+                stroke="#A3FF8B"
+                strokeWidth={3}
+                name="HEARST"
+              />
+              <Line
+                type="monotone"
+                dataKey="total"
+                stroke="#A3FF8B"
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                name="Total"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        )}
       </Card>
 
       {/* Tableau Détails des Projections - Premium */}
@@ -1074,16 +1079,16 @@ export default function ProjectionCalculator() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-hearst-bg-tertiary border-b-2 border-hearst-grey-100">
-                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-hearst-text-secondary">Année</th>
-                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-hearst-text-secondary">Prix BTC</th>
-                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-hearst-text-secondary">Difficulté</th>
-                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-hearst-green">BTC/Mois HEARST</th>
+                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-white">Année</th>
+                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-white">Prix BTC</th>
+                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-white">Difficulté</th>
+                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-white">BTC/Mois HEARST</th>
                 <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-white">BTC/Mois Qatar</th>
-                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-hearst-green">Revenue/Mois HEARST</th>
+                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-white">Revenue/Mois HEARST</th>
                 <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-white">Revenue/Mois Qatar</th>
-                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-hearst-green">OPEX/An HEARST</th>
+                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-white">OPEX/An HEARST</th>
                 <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-white">OPEX/An Qatar</th>
-                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-hearst-green">Profit/An HEARST</th>
+                <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-white">Profit/An HEARST</th>
                 <th className="text-center py-4 px-4 font-bold text-xs uppercase tracking-wider text-white">Profit/An Qatar</th>
               </tr>
             </thead>
@@ -1100,28 +1105,28 @@ export default function ProjectionCalculator() {
                     <td className="py-4 px-4 text-center font-medium text-white">
                       ${safeToFixed(row.btcPrice, 0)}k
                     </td>
-                    <td className="py-4 px-4 text-center font-medium text-gray-300">
+                    <td className="py-4 px-4 text-center font-medium text-white">
                       {safeToFixed(row.difficulty || 0, 1)} T
                     </td>
-                    <td className="py-4 px-4 text-center font-semibold text-hearst-green">
+                    <td className="py-4 px-4 text-center font-semibold text-white">
                       {safeToFixed(row.hearstMonthlyBTC || 0, 4)}
                     </td>
                     <td className="py-4 px-4 text-center font-semibold text-white">
                       {safeToFixed(row.qatarMonthlyBTC || 0, 4)}
                     </td>
-                    <td className="py-4 px-4 text-center font-semibold text-hearst-green">
+                    <td className="py-4 px-4 text-center font-semibold text-white">
                       ${safeToFixed(row.hearstRevenueMonthly || 0, 2)}M
                     </td>
                     <td className="py-4 px-4 text-center font-semibold text-white">
                       ${safeToFixed(row.qatarRevenueMonthly || 0, 2)}M
                     </td>
-                    <td className="py-4 px-4 text-center font-semibold text-hearst-green">
+                    <td className="py-4 px-4 text-center font-semibold text-white">
                       ${safeToFixed(row.hearstOpexYearly || 0, 2)}M
                     </td>
                     <td className="py-4 px-4 text-center font-semibold text-white">
                       ${safeToFixed(row.qatarOpexYearly || 0, 2)}M
                     </td>
-                    <td className="py-4 px-4 text-center font-bold text-hearst-green text-lg">
+                    <td className="py-4 px-4 text-center font-bold text-white text-lg">
                       ${safeToFixed(row.hearst, 2)}M
                     </td>
                     <td className="py-4 px-4 text-center font-bold text-white text-lg">
@@ -1131,7 +1136,7 @@ export default function ProjectionCalculator() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={11} className="py-8 text-center text-hearst-text-secondary">
+                  <td colSpan={11} className="py-8 text-center text-white">
                     Aucune donnée de projection disponible
                   </td>
                 </tr>
