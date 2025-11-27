@@ -18,7 +18,7 @@ import Card from "@/components/Card";
 import Button from "@/components/Button";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Scenario } from "@/components/ScenarioManager";
-import { Bitcoin, TrendingUp, Zap, Activity, Percent, Settings2, DollarSign, TrendingDown, ArrowUpRight, ArrowDownRight, Coins, Calendar, BarChart3, FileText, Download, ChevronDown, ChevronUp } from "lucide-react";
+import { Bitcoin, TrendingUp, Zap, Activity, Percent, Settings2, DollarSign, TrendingDown, ArrowUpRight, ArrowDownRight, Coins, Calendar, BarChart3, FileText, Download, ChevronDown, ChevronUp, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 // Helper function pour formater les nombres et éviter NaN
@@ -140,6 +140,7 @@ export default function ProjectionCalculator() {
   const [calculationProgress, setCalculationProgress] = useState(0);
   const [resultsReady, setResultsReady] = useState(false);
   const [showGlobalProjection, setShowGlobalProjection] = useState(false);
+  const [openPopup, setOpenPopup] = useState<string | null>(null);
   
   // Charger les données depuis localStorage uniquement après le montage côté client
   useEffect(() => {
@@ -345,8 +346,8 @@ export default function ProjectionCalculator() {
     dealBResult = calculateDealB(dealBInputs);
   }
 
-  // Projections sur 5 ans
-  const projectionYears = [1, 2, 3, 4, 5];
+  // Projections sur 10 ans
+  const projectionYears = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   let projectionData: any[] = [];
   
   try {
@@ -489,15 +490,6 @@ export default function ProjectionCalculator() {
                 relative cursor-pointer rounded-2xl p-6 overflow-hidden flex flex-col items-center justify-center h-full min-h-[260px] transition-all duration-300 bg-hearst-bg-secondary
               `}
             >
-              {/* Premium Sidebar Left - Visible when selected */}
-              <div className={`
-                absolute -left-1 top-0 bottom-0 w-1.5 transition-all duration-500 ease-in-out z-0
-                ${dealType === "revenue" 
-                  ? "bg-gradient-to-b from-transparent via-white to-transparent opacity-60 shadow-[0_0_15px_rgba(255,255,255,0.4)] blur-[1px]" 
-                  : "opacity-0"
-                }
-              `}></div>
-              
               {/* Premium Sidebar Right - Visible when selected */}
               <div className={`
                 absolute -right-1 top-0 bottom-0 w-1.5 transition-all duration-500 ease-in-out z-0
@@ -680,7 +672,6 @@ export default function ProjectionCalculator() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
           {/* Type de Deal */}
           <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
-            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-white/60 to-transparent opacity-50"></div>
             <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-white/60 to-transparent opacity-50"></div>
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/60 to-transparent opacity-0 group-hover:opacity-50 transition-opacity duration-500 ease-in-out"></div>
             <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
@@ -715,7 +706,6 @@ export default function ProjectionCalculator() {
 
           {/* Scénario Actif */}
           <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
-            <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-white to-transparent"></div>
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
             <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
               <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
@@ -794,7 +784,7 @@ export default function ProjectionCalculator() {
 
       {/* Tableau de projection - Premium - Qatar uniquement */}
       {resultsReady && (
-      <div id="projection-results">
+      <div id="projection-results" className="mt-[150px]">
         <Card className="overflow-x-auto bg-gradient-to-br from-hearst-bg-secondary to-hearst-bg-tertiary overflow-hidden relative">
           <div id="qatar-table"></div>
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#8A1538] to-transparent z-10"></div>
@@ -810,133 +800,207 @@ export default function ProjectionCalculator() {
                 </h2>
                 <div className="flex-1 h-0.5 bg-gradient-to-l from-transparent via-[#8A1538] to-transparent"></div>
               </div>
-              <div className="flex items-center justify-center">
-                {qatarTableOpen ? (
-                  <ChevronUp className="w-16 h-16 text-[#8A1538]" />
-                ) : (
-                  <ChevronDown className="w-16 h-16 text-[#8A1538]" />
-                )}
+              <div className="flex items-center justify-between w-full px-6">
+                {/* Total Investment - Décomposition */}
+                <div className="flex items-center gap-3">
+                  <span className="text-[38.4px]">🇶🇦</span>
+                  <h3 className="text-2xl md:text-3xl font-bold text-white">
+                    Total Investment - Décomposition
+                  </h3>
+                </div>
+                <div className="flex items-center justify-center">
+                  {qatarTableOpen ? (
+                    <ChevronUp className="w-16 h-16 text-[#8A1538]" />
+                  ) : (
+                    <ChevronDown className="w-16 h-16 text-[#8A1538]" />
+                  )}
+                </div>
               </div>
             </button>
           </div>
         
         {qatarTableOpen && (
         <div className="rounded-xl overflow-hidden border border-hearst-grey-100/30">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-hearst-bg-tertiary border-b-2 border-hearst-grey-100">
-                <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-hearst-text-secondary">Année</th>
-                <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-hearst-text-secondary">Prix BTC (k$)</th>
-                <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-white">HEARST (M$)</th>
-                <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-white">Qatar (M$)</th>
-                <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-hearst-text-secondary">Total (M$)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {projectionData && projectionData.length > 0 ? (
-                projectionData.map((row, index) => (
-                  <tr
-                    key={index}
-                    className="border-b border-hearst-grey-100/30"
-                  >
-                    <td className="py-5 px-6 text-center font-semibold text-white">{typeof row.year === 'string' ? row.year : `Année ${row.year}`}</td>
-                    <td className="py-5 px-6 text-center font-medium text-white">${safeToFixed(row.btcPrice, 0)}k</td>
-                    <td className="py-5 px-6 text-center text-white font-bold text-lg">
-                      ${safeToFixed(row.hearst, 2)}M
-                    </td>
-                    <td className="py-5 px-6 text-center text-white font-semibold">
-                      ${safeToFixed(row.qatar || 0, 2)}M
-                    </td>
-                    <td className="py-5 px-6 text-center text-hearst-text-secondary font-semibold">
-                      ${safeToFixed(row.total, 2)}M
+          <div className="max-h-[350px] overflow-y-auto">
+            <table className="w-full">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-hearst-bg-tertiary border-b-2 border-hearst-grey-100">
+                  <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-hearst-text-secondary">Année</th>
+                  <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-hearst-text-secondary">Prix BTC (k$)</th>
+                  <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-white">Revenues</th>
+                  <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-white">Profit</th>
+                  <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-white">ROI</th>
+                  <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-hearst-text-secondary">Price per BTC</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projectionData && projectionData.length > 0 ? (
+                  <>
+                    {projectionData.map((row, index) => {
+                      // Valeurs temporairement mises à 0 - à remplacer par les vraies formules
+                      const qatarRevenueAnnual = 0; // TODO: Calculer les revenues annuelles Qatar
+                      const qatarProfit = 0; // TODO: Calculer le profit annuel Qatar
+                      const capexInM = capex / 1000000;
+                      const roi = 0; // TODO: Calculer le ROI
+                      const pricePerBTC = 0; // TODO: Calculer le prix par BTC
+                      
+                      return (
+                        <tr
+                          key={index}
+                          className="border-b border-hearst-grey-100/30"
+                        >
+                          <td className="py-5 px-6 text-center font-semibold text-white">{typeof row.year === 'string' ? row.year : `Année ${row.year}`}</td>
+                          <td className="py-5 px-6 text-center font-medium text-white">${safeToFixed(row.btcPrice, 0)}k</td>
+                          <td className="py-5 px-6 text-center text-white font-semibold">
+                            ${safeToFixed(qatarRevenueAnnual, 2)}M
+                          </td>
+                          <td className="py-5 px-6 text-center text-white font-semibold">
+                            ${safeToFixed(qatarProfit, 2)}M
+                          </td>
+                          <td className="py-5 px-6 text-center text-white font-semibold">
+                            {safeToFixed(roi, 1)}%
+                          </td>
+                          <td className="py-5 px-6 text-center text-hearst-text-secondary font-semibold">
+                            ${safeToFixed(pricePerBTC, 2)}M
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {/* Ligne Total */}
+                    {(() => {
+                      // Valeurs temporairement mises à 0 - à remplacer par les vraies formules
+                      const totalRevenue = 0; // TODO: Calculer le total des revenues
+                      const totalProfit = 0; // TODO: Calculer le total des profits
+                      const totalROI = 0; // TODO: Calculer le ROI total
+                      const avgPricePerBTC = 0; // TODO: Calculer le prix moyen par BTC
+                      const avgBTCPrice = projectionData.reduce((sum, row) => sum + (row.btcPrice || 0), 0) / projectionData.length;
+                      
+                      return (
+                        <tr className="border-t-2 border-hearst-grey-100 bg-[#8A1538]/10">
+                          <td className="py-5 px-6 text-center font-bold text-white">Total</td>
+                          <td className="py-5 px-6 text-center font-medium text-white">${safeToFixed(avgBTCPrice, 0)}k</td>
+                          <td className="py-5 px-6 text-center text-white font-bold">
+                            ${safeToFixed(totalRevenue, 2)}M
+                          </td>
+                          <td className="py-5 px-6 text-center text-white font-bold">
+                            ${safeToFixed(totalProfit, 2)}M
+                          </td>
+                          <td className="py-5 px-6 text-center text-white font-bold">
+                            {safeToFixed(totalROI, 1)}%
+                          </td>
+                          <td className="py-5 px-6 text-center text-hearst-text-secondary font-bold">
+                            ${safeToFixed(avgPricePerBTC, 2)}M
+                          </td>
+                        </tr>
+                      );
+                    })()}
+                  </>
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-hearst-text-secondary">
+                      Aucune donnée de projection disponible
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-hearst-text-secondary">
-                    Aucune donnée de projection disponible
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
         )}
 
         {/* Total Investment - Décomposition */}
-        <div className="mt-0 pt-2 border-t-2 border-hearst-grey-100/30">
-          <h3 className="text-2xl md:text-3xl font-bold mb-8 text-white flex items-center gap-3 ml-6">
-            <span className="text-5xl">🇶🇦</span>
-            Total Investment - Décomposition
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-4">
-            {/* Infrastructure */}
+        <div className="mt-0 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-[36px]">
+            {/* Annualize net Revenues */}
             <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent"></div>
               <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent"></div>
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#8A1538] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
-              <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
+              <div className="absolute left-5 top-[calc(50%+10px)] transform -translate-y-1/2">
                 <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
                   <Zap className="w-10 h-10 text-[#8A1538]" strokeWidth={2.5} />
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-semibold text-white uppercase tracking-wide">Infrastructure</div>
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">Annualize net Revenues</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed((defaultHardwareCosts.infrastructurePerMW + defaultHardwareCosts.coolingPerMW + defaultHardwareCosts.networkingPerMW) * phase.mw / 1000000, 2)}M
+                  ${safeToFixed(0, 2)}M
                 </div>
+                <button 
+                  onClick={() => setOpenPopup("qatar-annualize-net-revenues")}
+                  className="text-sm text-[#8A1538] hover:text-[#8A1538]/80 underline mt-2 transition-colors"
+                >
+                  See more
+                </button>
               </div>
             </div>
 
-            {/* Hardware */}
+            {/* Annualize net Profit */}
             <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
               <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent"></div>
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#8A1538] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
-              <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
+              <div className="absolute left-5 top-[calc(50%+10px)] transform -translate-y-1/2">
                 <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
                   <Activity className="w-10 h-10 text-[#8A1538]" strokeWidth={2.5} />
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-semibold text-white uppercase tracking-wide">Hardware</div>
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">Annualize net Profit</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed(defaultHardwareCosts.asicPerMW * phase.mw / 1000000, 2)}M
+                  ${safeToFixed(0, 2)}M
                 </div>
+                <button 
+                  onClick={() => setOpenPopup("qatar-annualize-net-profit")}
+                  className="text-sm text-[#8A1538] hover:text-[#8A1538]/80 underline mt-2 transition-colors"
+                >
+                  See more
+                </button>
               </div>
             </div>
 
-            {/* OPEX Deployment */}
+            {/* ROI */}
             <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
               <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent"></div>
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#8A1538] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
-              <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
+              <div className="absolute left-5 top-[calc(50%+10px)] transform -translate-y-1/2">
                 <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
                   <Calendar className="w-10 h-10 text-[#8A1538]" strokeWidth={2.5} />
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-semibold text-white uppercase tracking-wide">OPEX Deployment</div>
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">ROI</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed(opexMonthly * 3 / 1000000, 2)}M
+                  ${safeToFixed(0, 2)}M
                 </div>
+                <button 
+                  onClick={() => setOpenPopup("qatar-roi")}
+                  className="text-sm text-[#8A1538] hover:text-[#8A1538]/80 underline mt-2 transition-colors"
+                >
+                  See more
+                </button>
               </div>
             </div>
 
-            {/* Total */}
+            {/* Cost per BTC / 1 */}
             <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
               <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent"></div>
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#8A1538] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
-              <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
+              <div className="absolute left-5 top-[calc(50%+10px)] transform -translate-y-1/2">
                 <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
                   <DollarSign className="w-10 h-10 text-[#8A1538]" strokeWidth={2.5} />
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-semibold text-white uppercase tracking-wide">Total Investment</div>
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">Cost per BTC / 1</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed(capex / 1000000, 2)}M
+                  ${safeToFixed(0, 2)}M
                 </div>
+                <button 
+                  onClick={() => setOpenPopup("qatar-cost-per-btc")}
+                  className="text-sm text-[#8A1538] hover:text-[#8A1538]/80 underline mt-2 transition-colors"
+                >
+                  See more
+                </button>
               </div>
             </div>
           </div>
@@ -947,7 +1011,7 @@ export default function ProjectionCalculator() {
 
       {/* Tableau Hearst */}
       {resultsReady && (
-      <Card className="overflow-x-auto bg-gradient-to-br from-hearst-bg-secondary to-hearst-bg-tertiary mt-12 overflow-hidden relative">
+      <Card className="overflow-x-auto bg-gradient-to-br from-hearst-bg-secondary to-hearst-bg-tertiary mt-[88px] overflow-hidden relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-hearst-green to-transparent z-10"></div>
         <div className="flex flex-col items-center justify-center mb-0 mt-6">
           <button
@@ -961,68 +1025,104 @@ export default function ProjectionCalculator() {
               </h2>
               <div className="flex-1 h-0.5 bg-gradient-to-l from-transparent via-hearst-green to-transparent"></div>
             </div>
-            <div className="flex items-center justify-center">
-              {hearstTableOpen ? (
-                <ChevronUp className="w-16 h-16 text-hearst-green" />
-              ) : (
-                <ChevronDown className="w-16 h-16 text-hearst-green" />
-              )}
+            <div className="flex items-center justify-between w-full px-6">
+              {/* Total Investment - Décomposition */}
+              <div className="flex items-center gap-3">
+                <DollarSign className="w-[25.6px] h-[25.6px] text-hearst-green" />
+                <h3 className="text-2xl md:text-3xl font-bold text-white">
+                  Total Investment - Décomposition
+                </h3>
+              </div>
+              <div className="flex items-center justify-center">
+                {hearstTableOpen ? (
+                  <ChevronUp className="w-16 h-16 text-hearst-green" />
+                ) : (
+                  <ChevronDown className="w-16 h-16 text-hearst-green" />
+                )}
+              </div>
             </div>
           </button>
         </div>
         
         {hearstTableOpen && (
         <div className="rounded-xl overflow-hidden border border-hearst-grey-100/30">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-hearst-bg-tertiary border-b-2 border-hearst-grey-100">
-                <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-hearst-text-secondary">Année</th>
-                <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-hearst-text-secondary">Prix BTC (k$)</th>
-                <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-white">HEARST (M$)</th>
-                <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-white">Qatar (M$)</th>
-                <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-hearst-text-secondary">Total (M$)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {projectionData && projectionData.length > 0 ? (
-                projectionData.map((row, index) => (
-                  <tr
-                    key={index}
-                    className="border-b border-hearst-grey-100/30"
-                  >
-                    <td className="py-5 px-6 text-center font-semibold text-white">{typeof row.year === 'string' ? row.year : `Année ${row.year}`}</td>
-                    <td className="py-5 px-6 text-center font-medium text-white">${safeToFixed(row.btcPrice, 0)}k</td>
-                    <td className="py-5 px-6 text-center text-white font-bold text-lg">
-                      ${safeToFixed(row.hearst, 2)}M
-                    </td>
-                    <td className="py-5 px-6 text-center text-white font-semibold">
-                      ${safeToFixed(row.qatar || 0, 2)}M
-                    </td>
-                    <td className="py-5 px-6 text-center text-hearst-text-secondary font-semibold">
-                      ${safeToFixed(row.total, 2)}M
+          <div className="max-h-[350px] overflow-y-auto">
+            <table className="w-full">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-hearst-bg-tertiary border-b-2 border-hearst-grey-100">
+                  <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-hearst-text-secondary">Année</th>
+                  <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-white">Margin</th>
+                  <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-white">Electricity</th>
+                  <th className="text-center py-4 px-6 font-bold text-sm uppercase tracking-wider text-hearst-text-secondary">Share revenu</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projectionData && projectionData.length > 0 ? (
+                  <>
+                    {projectionData.map((row, index) => {
+                      // Valeurs temporairement mises à 0 - à remplacer par les vraies formules
+                      const margin = 0; // TODO: Calculer la marge sur hardware
+                      const electricity = 0; // TODO: Calculer la part d'électricité
+                      const shareRevenu = 0; // TODO: Calculer la part de revenu
+                      
+                      return (
+                        <tr
+                          key={index}
+                          className="border-b border-hearst-grey-100/30"
+                        >
+                          <td className="py-5 px-6 text-center font-semibold text-white">{typeof row.year === 'string' ? row.year : `Année ${row.year}`}</td>
+                          <td className="py-5 px-6 text-center text-white font-semibold">
+                            {safeToFixed(margin, 1)}%
+                          </td>
+                          <td className="py-5 px-6 text-center text-white font-semibold">
+                            ${safeToFixed(electricity, 2)}M
+                          </td>
+                          <td className="py-5 px-6 text-center text-hearst-text-secondary font-semibold">
+                            ${safeToFixed(shareRevenu, 2)}M
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {/* Ligne Total */}
+                    {(() => {
+                      // Valeurs temporairement mises à 0 - à remplacer par les vraies formules
+                      const totalMargin = 0; // TODO: Calculer la marge totale
+                      const totalElectricity = 0; // TODO: Calculer l'électricité totale
+                      const totalShareRevenu = 0; // TODO: Calculer le total des revenus
+                      
+                      return (
+                        <tr className="border-t-2 border-hearst-grey-100 bg-hearst-green/10">
+                          <td className="py-5 px-6 text-center font-bold text-white">Total</td>
+                          <td className="py-5 px-6 text-center text-white font-bold">
+                            {safeToFixed(totalMargin, 1)}%
+                          </td>
+                          <td className="py-5 px-6 text-center text-white font-bold">
+                            ${safeToFixed(totalElectricity, 2)}M
+                          </td>
+                          <td className="py-5 px-6 text-center text-hearst-text-secondary font-bold">
+                            ${safeToFixed(totalShareRevenu, 2)}M
+                          </td>
+                        </tr>
+                      );
+                    })()}
+                  </>
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-hearst-text-secondary">
+                      Aucune donnée de projection disponible
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-hearst-text-secondary">
-                    Aucune donnée de projection disponible
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
         )}
 
         {/* Total Investment - Décomposition */}
-        <div className="mt-0 pt-2 border-t-2 border-hearst-grey-100/30">
-          <h3 className="text-2xl md:text-3xl font-bold mb-8 text-white flex items-center gap-3 ml-6">
-            <DollarSign className="w-8 h-8 text-hearst-green" />
-            Total Investment - Décomposition
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-4">
-            {/* Infrastructure */}
+        <div className="mt-0 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+            {/* Margin on hardware */}
             <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent"></div>
               <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent"></div>
@@ -1033,14 +1133,20 @@ export default function ProjectionCalculator() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-semibold text-white uppercase tracking-wide">Infrastructure</div>
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">Margin on hardware</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed((defaultHardwareCosts.infrastructurePerMW + defaultHardwareCosts.coolingPerMW + defaultHardwareCosts.networkingPerMW) * phase.mw / 1000000, 2)}M
+                  ${safeToFixed(0, 2)}M
                 </div>
+                <button 
+                  onClick={() => setOpenPopup("hearst-margin-on-hardware")}
+                  className="text-sm text-hearst-green hover:text-hearst-green/80 underline mt-2 transition-colors"
+                >
+                  See more
+                </button>
               </div>
             </div>
 
-            {/* Hardware */}
+            {/* Share Electricity */}
             <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
               <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent"></div>
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-hearst-green to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
@@ -1050,31 +1156,20 @@ export default function ProjectionCalculator() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-semibold text-white uppercase tracking-wide">Hardware</div>
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">Share Electricity</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed(defaultHardwareCosts.asicPerMW * phase.mw / 1000000, 2)}M
+                  ${safeToFixed(0, 2)}M
                 </div>
+                <button 
+                  onClick={() => setOpenPopup("hearst-share-electricity")}
+                  className="text-sm text-hearst-green hover:text-hearst-green/80 underline mt-2 transition-colors"
+                >
+                  See more
+                </button>
               </div>
             </div>
 
-            {/* OPEX Deployment */}
-            <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
-              <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent"></div>
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-hearst-green to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
-              <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
-                <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
-                  <Calendar className="w-10 h-10 text-hearst-green" strokeWidth={2.5} />
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-semibold text-white uppercase tracking-wide">OPEX Deployment</div>
-                <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed(opexMonthly * 3 / 1000000, 2)}M
-                </div>
-              </div>
-            </div>
-
-            {/* Total */}
+            {/* Share Revenu */}
             <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
               <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent"></div>
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-hearst-green to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
@@ -1084,10 +1179,16 @@ export default function ProjectionCalculator() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-semibold text-white uppercase tracking-wide">Total Investment</div>
+                <div className="text-lg font-semibold text-white uppercase tracking-wide">Share Revenu</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed(capex / 1000000, 2)}M
+                  ${safeToFixed(0, 2)}M
                 </div>
+                <button 
+                  onClick={() => setOpenPopup("hearst-share-revenu")}
+                  className="text-sm text-hearst-green hover:text-hearst-green/80 underline mt-2 transition-colors"
+                >
+                  See more
+                </button>
               </div>
             </div>
           </div>
@@ -1314,6 +1415,376 @@ export default function ProjectionCalculator() {
       </Card>
       )}
 
+      {/* Popup Modal Premium Ultra Luxe */}
+      {openPopup && (
+        <div 
+          className="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex items-center justify-center p-4 animate-fadeIn"
+          onClick={() => setOpenPopup(null)}
+          style={{ animation: 'fadeIn 0.3s ease-out' }}
+        >
+          <div 
+            className={`relative rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl ${
+              openPopup.startsWith("qatar") 
+                ? "bg-gradient-to-br from-hearst-dark via-[#1a0f14] to-hearst-dark border-2 border-[#8A1538]/60 shadow-[#8A1538]/30" 
+                : "bg-gradient-to-br from-hearst-dark via-hearst-bg-secondary to-hearst-dark border-2 border-hearst-green/50 shadow-hearst-green/20"
+            }`}
+            onClick={(e) => e.stopPropagation()}
+            style={{ animation: 'slideUp 0.4s ease-out' }}
+          >
+            {/* Sidebars Premium - Gauche et Droite */}
+            <div className={`absolute left-0 top-0 bottom-0 w-1.5 transition-all duration-500 ease-in-out z-0 ${
+              openPopup.startsWith("qatar")
+                ? "bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-80 shadow-[0_0_20px_rgba(138,21,56,0.6)] blur-[1px]"
+                : "bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-80 shadow-[0_0_20px_rgba(124,255,90,0.6)] blur-[1px]"
+            }`}></div>
+            <div className={`absolute right-0 top-0 bottom-0 w-1.5 transition-all duration-500 ease-in-out z-0 ${
+              openPopup.startsWith("qatar")
+                ? "bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-80 shadow-[0_0_20px_rgba(138,21,56,0.6)] blur-[1px]"
+                : "bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-80 shadow-[0_0_20px_rgba(124,255,90,0.6)] blur-[1px]"
+            }`}></div>
+            
+            {/* Effets de lumière premium */}
+            <div className={`absolute top-0 left-0 right-0 h-1 ${
+              openPopup.startsWith("qatar")
+                ? "bg-gradient-to-r from-transparent via-[#8A1538] to-transparent opacity-70"
+                : "bg-gradient-to-r from-transparent via-hearst-green to-transparent opacity-70"
+            }`}></div>
+            <div className={`absolute top-0 left-0 w-96 h-96 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 ${
+              openPopup.startsWith("qatar") ? "bg-[#8A1538]/15" : "bg-hearst-green/10"
+            }`}></div>
+            <div className={`absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full blur-3xl translate-x-1/2 translate-y-1/2 ${
+              openPopup.startsWith("qatar") ? "bg-[#8A1538]/8" : "bg-hearst-green/5"
+            }`}></div>
+            
+            {/* Header Premium Ultra Luxe */}
+            <div className={`relative sticky top-0 backdrop-blur-2xl border-b-2 p-8 flex items-center justify-between z-10 ${
+              openPopup.startsWith("qatar")
+                ? "bg-gradient-to-r from-hearst-dark/98 via-[#1a0f14]/98 to-hearst-dark/98 border-[#8A1538]/40"
+                : "bg-gradient-to-r from-hearst-dark/98 via-hearst-bg-secondary/98 to-hearst-dark/98 border-hearst-green/40"
+            }`}>
+              <div className="flex items-center gap-5">
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border-2 shadow-2xl ${
+                  openPopup.startsWith("qatar")
+                    ? "bg-gradient-to-br from-[#8A1538]/40 to-[#8A1538]/20 border-[#8A1538]/50"
+                    : "bg-gradient-to-br from-hearst-green/40 to-hearst-green/20 border-hearst-green/50"
+                }`}>
+                  {openPopup.startsWith("qatar") ? (
+                    <span className="text-3xl">🇶🇦</span>
+                  ) : (
+                    <DollarSign className={`w-8 h-8 ${openPopup.startsWith("qatar") ? "text-[#8A1538]" : "text-hearst-green"}`} strokeWidth={2.5} />
+                  )}
+                </div>
+                <h3 className="text-4xl font-bold text-white tracking-tight">
+                  {openPopup === "qatar-annualize-net-revenues" && "Annualize net Revenues"}
+                  {openPopup === "qatar-annualize-net-profit" && "Annualize net Profit"}
+                  {openPopup === "qatar-roi" && "ROI"}
+                  {openPopup === "qatar-cost-per-btc" && "Cost per BTC / 1"}
+                  {openPopup === "hearst-margin-on-hardware" && "Margin on hardware"}
+                  {openPopup === "hearst-share-electricity" && "Share Electricity"}
+                  {openPopup === "hearst-share-revenu" && "Share Revenu"}
+                </h3>
+              </div>
+              <button
+                onClick={() => setOpenPopup(null)}
+                className={`p-3 rounded-xl transition-all duration-300 hover:scale-110 border-2 group ${
+                  openPopup.startsWith("qatar")
+                    ? "hover:bg-[#8A1538]/20 border-[#8A1538]/40 hover:border-[#8A1538]/70"
+                    : "hover:bg-hearst-green/20 border-hearst-green/40 hover:border-hearst-green/70"
+                }`}
+              >
+                <X className={`w-7 h-7 transition-colors ${openPopup.startsWith("qatar") ? "text-white group-hover:text-[#8A1538]" : "text-white group-hover:text-hearst-green"}`} strokeWidth={2.5} />
+              </button>
+            </div>
+            
+            {/* Content Premium Ultra Luxe */}
+            <div className="relative p-10 space-y-8 overflow-y-auto max-h-[calc(90vh-180px)]">
+              {openPopup === "qatar-annualize-net-revenues" && (
+                <div className="space-y-8">
+                  <div className="relative p-8 bg-gradient-to-br from-[#1a0f14]/80 via-[#2a1520]/60 to-[#1a0f14]/80 rounded-3xl border-2 border-[#8A1538]/40 backdrop-blur-xl overflow-hidden">
+                    {/* Sidebars pour section Qatar */}
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-[#8A1538]/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#8A1538]/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-[#8A1538] rounded-full shadow-lg shadow-[#8A1538]/50"></div>
+                        Explication
+                      </h4>
+                      <p className="text-hearst-text-secondary leading-relaxed text-lg">
+                        Les revenus annuels nets représentent le revenu total généré sur une année, après déduction des coûts opérationnels. Cette métrique reflète la performance financière réelle du projet de mining Bitcoin et permet d'évaluer la viabilité économique à long terme.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="relative p-8 bg-gradient-to-br from-[#1a0f14]/80 via-[#2a1520]/60 to-[#1a0f14]/80 rounded-3xl border-2 border-[#8A1538]/40 backdrop-blur-xl overflow-hidden">
+                    {/* Sidebars pour section Qatar */}
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-[#8A1538]/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#8A1538]/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-[#8A1538] rounded-full shadow-lg shadow-[#8A1538]/50"></div>
+                        Calcul détaillé
+                      </h4>
+                      <div className="bg-hearst-dark/70 backdrop-blur-md p-6 rounded-2xl border-2 border-[#8A1538]/30 font-mono text-base space-y-4">
+                        <div className="text-[#8A1538] font-bold text-lg">Formule :</div>
+                        <p className="text-white text-lg">Infrastructure = (Infrastructure/MW + Cooling/MW + Networking/MW) × MW</p>
+                        <div className="pt-4 border-t-2 border-[#8A1538]/30">
+                          <div className="text-[#8A1538] font-bold text-lg mb-3">Résultat :</div>
+                          <p className="text-3xl font-bold text-white">${safeToFixed((defaultHardwareCosts.infrastructurePerMW + defaultHardwareCosts.coolingPerMW + defaultHardwareCosts.networkingPerMW) * phase.mw / 1000000, 2)}M</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {openPopup === "qatar-annualize-net-profit" && (
+                <div className="space-y-8">
+                  <div className="relative p-8 bg-gradient-to-br from-[#1a0f14]/80 via-[#2a1520]/60 to-[#1a0f14]/80 rounded-3xl border-2 border-[#8A1538]/40 backdrop-blur-xl overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-[#8A1538]/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#8A1538]/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-[#8A1538] rounded-full shadow-lg shadow-[#8A1538]/50"></div>
+                        Explication
+                      </h4>
+                      <p className="text-hearst-text-secondary leading-relaxed text-lg">
+                        Le profit net annuel représente le bénéfice réel après déduction de tous les coûts, incluant les coûts d'infrastructure, d'exploitation et de maintenance. C'est la métrique clé pour évaluer la rentabilité du projet.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="relative p-8 bg-gradient-to-br from-[#1a0f14]/80 via-[#2a1520]/60 to-[#1a0f14]/80 rounded-3xl border-2 border-[#8A1538]/40 backdrop-blur-xl overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-[#8A1538]/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#8A1538]/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-[#8A1538] rounded-full shadow-lg shadow-[#8A1538]/50"></div>
+                        Calcul détaillé
+                      </h4>
+                      <div className="bg-hearst-dark/70 backdrop-blur-md p-6 rounded-2xl border-2 border-[#8A1538]/30 font-mono text-base space-y-4">
+                        <div className="text-[#8A1538] font-bold text-lg">Formule :</div>
+                        <p className="text-white text-lg">Hardware = ASIC/MW × MW</p>
+                        <div className="pt-4 border-t-2 border-[#8A1538]/30">
+                          <div className="text-[#8A1538] font-bold text-lg mb-3">Résultat :</div>
+                          <p className="text-3xl font-bold text-white">${safeToFixed(defaultHardwareCosts.asicPerMW * phase.mw / 1000000, 2)}M</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {openPopup === "qatar-roi" && (
+                <div className="space-y-8">
+                  <div className="relative p-8 bg-gradient-to-br from-[#1a0f14]/80 via-[#2a1520]/60 to-[#1a0f14]/80 rounded-3xl border-2 border-[#8A1538]/40 backdrop-blur-xl overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-[#8A1538]/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#8A1538]/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-[#8A1538] rounded-full shadow-lg shadow-[#8A1538]/50"></div>
+                        Explication
+                      </h4>
+                      <p className="text-hearst-text-secondary leading-relaxed text-lg">
+                        Le ROI (Return on Investment) représente le retour sur investissement, calculé sur la base des coûts de déploiement OPEX sur 3 mois. Cette métrique permet d'évaluer l'efficacité de l'investissement initial.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="relative p-8 bg-gradient-to-br from-[#1a0f14]/80 via-[#2a1520]/60 to-[#1a0f14]/80 rounded-3xl border-2 border-[#8A1538]/40 backdrop-blur-xl overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-[#8A1538]/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#8A1538]/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-[#8A1538] rounded-full shadow-lg shadow-[#8A1538]/50"></div>
+                        Calcul détaillé
+                      </h4>
+                      <div className="bg-hearst-dark/70 backdrop-blur-md p-6 rounded-2xl border-2 border-[#8A1538]/30 font-mono text-base space-y-4">
+                        <div className="text-[#8A1538] font-bold text-lg">Formule :</div>
+                        <p className="text-white text-lg">OPEX Deployment = OPEX Mensuel × 3</p>
+                        <div className="pt-4 border-t-2 border-[#8A1538]/30">
+                          <div className="text-[#8A1538] font-bold text-lg mb-3">Résultat :</div>
+                          <p className="text-3xl font-bold text-white">${safeToFixed(opexMonthly * 3 / 1000000, 2)}M</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {openPopup === "qatar-cost-per-btc" && (
+                <div className="space-y-8">
+                  <div className="relative p-8 bg-gradient-to-br from-[#1a0f14]/80 via-[#2a1520]/60 to-[#1a0f14]/80 rounded-3xl border-2 border-[#8A1538]/40 backdrop-blur-xl overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-[#8A1538]/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#8A1538]/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-[#8A1538] rounded-full shadow-lg shadow-[#8A1538]/50"></div>
+                        Explication
+                      </h4>
+                      <p className="text-hearst-text-secondary leading-relaxed text-lg">
+                        Le coût par BTC représente le coût total d'investissement divisé par le nombre de BTC minés, donnant le coût unitaire de production d'un Bitcoin. Cette métrique est essentielle pour évaluer la compétitivité du projet.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="relative p-8 bg-gradient-to-br from-[#1a0f14]/80 via-[#2a1520]/60 to-[#1a0f14]/80 rounded-3xl border-2 border-[#8A1538]/40 backdrop-blur-xl overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#8A1538] to-transparent opacity-70 shadow-[0_0_15px_rgba(138,21,56,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-[#8A1538]/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#8A1538]/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-[#8A1538] rounded-full shadow-lg shadow-[#8A1538]/50"></div>
+                        Calcul détaillé
+                      </h4>
+                      <div className="bg-hearst-dark/70 backdrop-blur-md p-6 rounded-2xl border-2 border-[#8A1538]/30 font-mono text-base space-y-4">
+                        <div className="text-[#8A1538] font-bold text-lg">Formule :</div>
+                        <p className="text-white text-lg">Total Investment = CAPEX Total</p>
+                        <div className="pt-4 border-t-2 border-[#8A1538]/30">
+                          <div className="text-[#8A1538] font-bold text-lg mb-3">Résultat :</div>
+                          <p className="text-3xl font-bold text-white">${safeToFixed(capex / 1000000, 2)}M</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {openPopup === "hearst-margin-on-hardware" && (
+                <div className="space-y-8">
+                  <div className="relative p-8 bg-gradient-to-br from-hearst-bg-secondary/80 via-hearst-bg-tertiary/60 to-hearst-bg-secondary/80 rounded-3xl border-2 border-hearst-green/40 backdrop-blur-xl overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-70 shadow-[0_0_15px_rgba(124,255,90,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-70 shadow-[0_0_15px_rgba(124,255,90,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-hearst-green/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-hearst-green/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-hearst-green rounded-full shadow-lg shadow-hearst-green/50"></div>
+                        Explication
+                      </h4>
+                      <p className="text-hearst-text-secondary leading-relaxed text-lg">
+                        La marge sur le hardware représente la différence entre le prix de vente et le coût d'achat du matériel minier, incluant l'infrastructure, le refroidissement et le réseau. Cette marge reflète la valeur ajoutée de HEARST dans le projet.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="relative p-8 bg-gradient-to-br from-hearst-bg-secondary/80 via-hearst-bg-tertiary/60 to-hearst-bg-secondary/80 rounded-3xl border-2 border-hearst-green/40 backdrop-blur-xl overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-70 shadow-[0_0_15px_rgba(124,255,90,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-70 shadow-[0_0_15px_rgba(124,255,90,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-hearst-green/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-hearst-green/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-hearst-green rounded-full shadow-lg shadow-hearst-green/50"></div>
+                        Calcul détaillé
+                      </h4>
+                      <div className="bg-hearst-dark/70 backdrop-blur-md p-6 rounded-2xl border-2 border-hearst-green/30 font-mono text-base space-y-4">
+                        <div className="text-hearst-green font-bold text-lg">Formule :</div>
+                        <p className="text-white text-lg">Infrastructure = (Infrastructure/MW + Cooling/MW + Networking/MW) × MW</p>
+                        <div className="pt-4 border-t-2 border-hearst-green/30">
+                          <div className="text-hearst-green font-bold text-lg mb-3">Résultat :</div>
+                          <p className="text-3xl font-bold text-white">${safeToFixed((defaultHardwareCosts.infrastructurePerMW + defaultHardwareCosts.coolingPerMW + defaultHardwareCosts.networkingPerMW) * phase.mw / 1000000, 2)}M</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {openPopup === "hearst-share-electricity" && (
+                <div className="space-y-8">
+                  <div className="relative p-8 bg-gradient-to-br from-hearst-bg-secondary/80 via-hearst-bg-tertiary/60 to-hearst-bg-secondary/80 rounded-3xl border-2 border-hearst-green/40 backdrop-blur-xl overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-70 shadow-[0_0_15px_rgba(124,255,90,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-70 shadow-[0_0_15px_rgba(124,255,90,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-hearst-green/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-hearst-green/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-hearst-green rounded-full shadow-lg shadow-hearst-green/50"></div>
+                        Explication
+                      </h4>
+                      <p className="text-hearst-text-secondary leading-relaxed text-lg">
+                        La part d'électricité représente le coût total de l'électricité consommée par le matériel minier sur la durée de vie du projet. Cette métrique est cruciale pour évaluer les coûts opérationnels à long terme.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="relative p-8 bg-gradient-to-br from-hearst-bg-secondary/80 via-hearst-bg-tertiary/60 to-hearst-bg-secondary/80 rounded-3xl border-2 border-hearst-green/40 backdrop-blur-xl overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-70 shadow-[0_0_15px_rgba(124,255,90,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-70 shadow-[0_0_15px_rgba(124,255,90,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-hearst-green/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-hearst-green/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-hearst-green rounded-full shadow-lg shadow-hearst-green/50"></div>
+                        Calcul détaillé
+                      </h4>
+                      <div className="bg-hearst-dark/70 backdrop-blur-md p-6 rounded-2xl border-2 border-hearst-green/30 font-mono text-base space-y-4">
+                        <div className="text-hearst-green font-bold text-lg">Formule :</div>
+                        <p className="text-white text-lg">Hardware = ASIC/MW × MW</p>
+                        <div className="pt-4 border-t-2 border-hearst-green/30">
+                          <div className="text-hearst-green font-bold text-lg mb-3">Résultat :</div>
+                          <p className="text-3xl font-bold text-white">${safeToFixed(defaultHardwareCosts.asicPerMW * phase.mw / 1000000, 2)}M</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {openPopup === "hearst-share-revenu" && (
+                <div className="space-y-8">
+                  <div className="relative p-8 bg-gradient-to-br from-hearst-bg-secondary/80 via-hearst-bg-tertiary/60 to-hearst-bg-secondary/80 rounded-3xl border-2 border-hearst-green/40 backdrop-blur-xl overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-70 shadow-[0_0_15px_rgba(124,255,90,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-70 shadow-[0_0_15px_rgba(124,255,90,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-hearst-green/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-hearst-green/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-hearst-green rounded-full shadow-lg shadow-hearst-green/50"></div>
+                        Explication
+                      </h4>
+                      <p className="text-hearst-text-secondary leading-relaxed text-lg">
+                        La part de revenu représente le pourcentage des revenus générés par le mining qui revient à HEARST selon le type de deal sélectionné. Cette répartition est définie contractuellement et impacte directement la rentabilité.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="relative p-8 bg-gradient-to-br from-hearst-bg-secondary/80 via-hearst-bg-tertiary/60 to-hearst-bg-secondary/80 rounded-3xl border-2 border-hearst-green/40 backdrop-blur-xl overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-70 shadow-[0_0_15px_rgba(124,255,90,0.5)]"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-hearst-green to-transparent opacity-70 shadow-[0_0_15px_rgba(124,255,90,0.5)]"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-hearst-green/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-hearst-green/8 rounded-full blur-3xl"></div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-3 h-3 bg-hearst-green rounded-full shadow-lg shadow-hearst-green/50"></div>
+                        Calcul détaillé
+                      </h4>
+                      <div className="bg-hearst-dark/70 backdrop-blur-md p-6 rounded-2xl border-2 border-hearst-green/30 font-mono text-base space-y-4">
+                        <div className="text-hearst-green font-bold text-lg">Formule :</div>
+                        <p className="text-white text-lg">Total Investment = CAPEX Total</p>
+                        <div className="pt-4 border-t-2 border-hearst-green/30">
+                          <div className="text-hearst-green font-bold text-lg mb-3">Résultat :</div>
+                          <p className="text-3xl font-bold text-white">${safeToFixed(capex / 1000000, 2)}M</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Footer avec détails Hearst - Caché quand les résultats sont prêts et Global Projection n'est pas affiché */}
       {(!resultsReady || showGlobalProjection) && (
       <footer className="h-[100px] bg-hearst-bg-secondary border-t border-hearst-grey-100/30 flex items-center justify-between px-8 mt-12">
@@ -1333,6 +1804,7 @@ export default function ProjectionCalculator() {
     </div>
   );
 }
+
 
 
 

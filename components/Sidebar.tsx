@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
   TrendingUp, 
-  Settings, 
   FileText,
   BarChart3
 } from "lucide-react";
@@ -23,7 +22,6 @@ export default function Sidebar() {
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
     { href: "/projection", label: "Projection", icon: TrendingUp },
     { href: "/report", label: "Rapport", icon: FileText },
-    { href: "/settings", label: "Paramètres", icon: Settings },
   ];
 
   return (

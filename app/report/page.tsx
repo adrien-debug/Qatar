@@ -234,7 +234,7 @@ export default function ReportPage() {
     <div className="min-h-screen bg-hearst-dark">
       <Navigation />
       
-      <main className="p-8 overflow-y-auto min-h-screen">
+      <main className="p-8 overflow-y-auto min-h-screen mx-[200px]">
           {/* Navigation - masquée à l'impression */}
           <div className="no-print mb-6">
             <div className="flex items-center justify-between">

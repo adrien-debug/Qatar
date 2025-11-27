@@ -10,7 +10,7 @@ export default function Home() {
     <div className="min-h-screen bg-hearst-dark">
       <Navigation />
       
-      <main className="p-8 overflow-y-auto min-h-screen">
+      <main className="p-8 overflow-y-auto min-h-screen mx-[200px]">
           {/* Hero Section */}
           <div className="mb-12">
             <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">

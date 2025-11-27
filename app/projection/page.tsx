@@ -8,7 +8,7 @@ export default function ProjectionPage() {
     <div className="min-h-screen bg-hearst-dark">
       <Navigation />
       
-      <main className="pt-4 p-8 overflow-y-auto min-h-screen">
+      <main className="pt-4 p-8 overflow-y-auto min-h-screen mx-[200px]">
         <ProjectionCalculator />
       </main>
     </div>

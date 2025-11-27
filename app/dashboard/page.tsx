@@ -139,7 +139,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="p-8 space-y-8">
+        <div className="p-8 space-y-8 mx-[200px]">
           {/* Mining Operations Section */}
           <section>
             <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Mining operations</h2>

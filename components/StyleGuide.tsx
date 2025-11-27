@@ -6,7 +6,7 @@
  */
 export default function StyleGuide() {
   return (
-    <div className="min-h-screen bg-hearst-light p-8">
+    <div className="min-h-screen bg-hearst-light p-8 mx-[200px]">
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Header Noir (style PowerPoint) */}
         <div className="bg-black text-white p-8 md:p-10 rounded-lg">
