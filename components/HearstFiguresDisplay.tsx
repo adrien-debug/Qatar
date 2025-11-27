@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Card from "./Card";
+import { formatCurrency } from "@/lib/utils";
 import {
   DealSpreadsheetConfig,
   defaultDealConfig,
@@ -64,15 +65,6 @@ export default function HearstFiguresDisplay({
     }
   }, []);
 
-  const formatCurrency = (value: number | undefined | null): string => {
-    if (!value || isNaN(value)) return "$0";
-    if (Math.abs(value) >= 1000000) {
-      return `$${(value / 1000000).toFixed(2)}M`;
-    } else if (Math.abs(value) >= 1000) {
-      return `$${(value / 1000).toFixed(2)}K`;
-    }
-    return `$${value.toFixed(2)}`;
-  };
 
   const formatPercent = (value: number | undefined | null): string => {
     if (!value || isNaN(value)) return "0%";

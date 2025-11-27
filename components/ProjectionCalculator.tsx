@@ -20,54 +20,71 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { Scenario } from "@/components/ScenarioManager";
 import { Bitcoin, TrendingUp, Zap, Activity, Percent, Settings2, DollarSign, TrendingDown, ArrowUpRight, ArrowDownRight, Coins, Calendar, BarChart3, FileText, Download, ChevronDown, ChevronUp, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-// Helper function pour formater les nombres et éviter NaN
-const safeNumber = (value: number | undefined | null): number => {
-  if (value === undefined || value === null || isNaN(value)) return 0;
-  return value;
-};
-
-const safeToFixed = (value: number | undefined | null, decimals: number): string => {
-  const num = safeNumber(value);
-  return isNaN(num) ? "0" : num.toFixed(decimals);
-};
-
-// Formatter pour afficher les nombres en M$ ou K$
-const formatCurrency = (value: number | undefined | null): string => {
-  const num = safeNumber(value);
-  if (isNaN(num) || num === 0) return "$0";
-  
-  if (Math.abs(num) >= 1000000) {
-    const millions = num / 1000000;
-    return `$${safeToFixed(millions, millions >= 10 ? 1 : 2)}M`;
-  } else if (Math.abs(num) >= 1000) {
-    const thousands = num / 1000;
-    return `$${safeToFixed(thousands, thousands >= 10 ? 1 : 2)}K`;
-  } else {
-    return `$${safeToFixed(num, 2)}`;
-  }
-};
+import { safeNumber, safeToFixed, formatCurrency } from "@/lib/utils";
+import { useCurrentSetup, updateActiveScenarioShares } from "@/lib/setup-data";
 
 export default function ProjectionCalculator() {
   const router = useRouter();
+  const setup = useCurrentSetup();
   const [mounted, setMounted] = useState(false);
   const [dealType, setDealType] = useState<"revenue" | "mw">("revenue");
   const [revenueShare, setRevenueShare] = useState(8);
   const [mwAllocated, setMwAllocated] = useState(12);
   const [selectedPhase, setSelectedPhase] = useState(3);
+  // IMPORTANT: Ces valeurs sont initialisées depuis le scénario actif (via setup)
+  // et synchronisées avec le scénario actif quand elles changent
+  const [shareElectricity, setShareElectricity] = useState(() => setup.parameters.shareElectricityPercent);
+  const [shareSPV, setShareSPV] = useState(() => setup.parameters.shareSpvPercent);
   
   // Valeurs min/max pour les sliders
   const revenueShareMin = 0;
   const revenueShareMax = 30;
   const mwAllocatedMin = 0;
   const mwAllocatedMax = 30;
+  const shareElectricityMin = 0;
+  const shareElectricityMax = 30;
+  const shareSPVMin = 0;
+  const shareSPVMax = 30;
   const revenueSliderRef = useRef<HTMLInputElement>(null);
   const mwSliderRef = useRef<HTMLInputElement>(null);
+  const shareElectricitySliderRef = useRef<HTMLInputElement>(null);
+  const shareSPVSliderRef = useRef<HTMLInputElement>(null);
+  
+  // Ref pour suivre si nous sommes en train de synchroniser depuis le scénario (évite les boucles infinies)
+  const isSyncingFromScenario = useRef(false);
   
   // Marquer comme monté après le premier rendu côté client
   useEffect(() => {
     setMounted(true);
   }, []);
+  
+  // Synchroniser les sliders avec le scénario de base quand setup change
+  // IMPORTANT: Ne mettre à jour que si les valeurs sont réellement différentes pour éviter les boucles infinies
+  // Les valeurs Share SPV et Share Electricity font toujours partie du scénario de base
+  useEffect(() => {
+    if (!mounted) return;
+    // Mettre à jour les sliders avec les valeurs du scénario de base
+    // Seulement si les valeurs sont différentes pour éviter les boucles infinies
+    if (shareElectricity !== setup.parameters.shareElectricityPercent) {
+      isSyncingFromScenario.current = true;
+      setShareElectricity(setup.parameters.shareElectricityPercent);
+    }
+    if (shareSPV !== setup.parameters.shareSpvPercent) {
+      isSyncingFromScenario.current = true;
+      setShareSPV(setup.parameters.shareSpvPercent);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setup.parameters.shareElectricityPercent, setup.parameters.shareSpvPercent, mounted]);
+  
+  // Réinitialiser le flag de synchronisation après chaque mise à jour des sliders
+  useEffect(() => {
+    if (isSyncingFromScenario.current) {
+      // Utiliser requestAnimationFrame pour réinitialiser après le rendu
+      requestAnimationFrame(() => {
+        isSyncingFromScenario.current = false;
+      });
+    }
+  }, [shareElectricity, shareSPV]);
   
   // Mettre à jour la partie remplie en vert pour les sliders (uniquement après montage)
   useEffect(() => {
@@ -81,16 +98,37 @@ export default function ProjectionCalculator() {
     
     updateSliderProgress(revenueSliderRef.current, revenueShare, revenueShareMin, revenueShareMax);
     updateSliderProgress(mwSliderRef.current, mwAllocated, mwAllocatedMin, mwAllocatedMax);
-  }, [revenueShare, mwAllocated, mounted]);
+    updateSliderProgress(shareElectricitySliderRef.current, shareElectricity, shareElectricityMin, shareElectricityMax);
+    updateSliderProgress(shareSPVSliderRef.current, shareSPV, shareSPVMin, shareSPVMax);
+  }, [revenueShare, mwAllocated, shareElectricity, shareSPV, mounted]);
 
   // Sauvegarder les paramètres dans localStorage pour le rapport (uniquement après montage)
+  // ET synchroniser avec le scénario actif pour shareElectricity et shareSPV
+  // IMPORTANT: Ne pas mettre à jour le scénario si nous sommes en train de synchroniser depuis le scénario
+  // ou si les valeurs correspondent déjà aux valeurs du scénario
   useEffect(() => {
     if (!mounted || typeof window === 'undefined') return;
     localStorage.setItem("qatar-deal-type", dealType);
     localStorage.setItem("qatar-revenue-share", revenueShare.toString());
     localStorage.setItem("qatar-mw-allocated", mwAllocated.toString());
     localStorage.setItem("qatar-selected-phase", selectedPhase.toString());
-  }, [dealType, revenueShare, mwAllocated, selectedPhase, mounted]);
+    localStorage.setItem("qatar-share-electricity", shareElectricity.toString());
+    localStorage.setItem("qatar-share-spv", shareSPV.toString());
+    
+    // Synchroniser avec le scénario de base toujours actif
+    // Les valeurs Share SPV et Share Electricity font toujours partie du scénario de base
+    // IMPORTANT: Ne pas mettre à jour si nous sommes en train de synchroniser depuis le scénario
+    if (!isSyncingFromScenario.current) {
+      // Toujours mettre à jour les valeurs de base (elles sont toujours actives)
+      // Comparer avec les valeurs actuelles dans setup pour éviter les mises à jour inutiles
+      if (
+        setup.parameters.shareElectricityPercent !== shareElectricity ||
+        setup.parameters.shareSpvPercent !== shareSPV
+      ) {
+        updateActiveScenarioShares(shareElectricity, shareSPV);
+      }
+    }
+  }, [dealType, revenueShare, mwAllocated, selectedPhase, shareElectricity, shareSPV, mounted]);
   
   // Charger le scénario actif depuis localStorage
   const loadActiveScenario = (): { params: MiningParams; scenario: Scenario | null } => {
@@ -165,6 +203,26 @@ export default function ProjectionCalculator() {
     if (savedPhase) {
       const parsed = parseInt(savedPhase);
       if (!isNaN(parsed) && parsed >= 1 && parsed <= 3) setSelectedPhase(parsed);
+    }
+    // Initialiser depuis le scénario de base (toujours actif)
+    // Les valeurs Share SPV et Share Electricity font toujours partie du scénario de base
+    // Utiliser les valeurs du setup (qui vient toujours du scénario de base)
+    setShareElectricity(setup.parameters.shareElectricityPercent);
+    setShareSPV(setup.parameters.shareSpvPercent);
+    
+    // Fallback: utiliser localStorage si les valeurs du setup ne sont pas disponibles
+    // (ne devrait normalement pas arriver, mais c'est une sécurité)
+    if (setup.parameters.shareElectricityPercent === undefined || setup.parameters.shareSpvPercent === undefined) {
+      const savedShareElectricity = localStorage.getItem("qatar-share-electricity");
+      if (savedShareElectricity) {
+        const parsed = parseFloat(savedShareElectricity);
+        if (!isNaN(parsed)) setShareElectricity(parsed);
+      }
+      const savedShareSPV = localStorage.getItem("qatar-share-spv");
+      if (savedShareSPV) {
+        const parsed = parseFloat(savedShareSPV);
+        if (!isNaN(parsed)) setShareSPV(parsed);
+      }
     }
     
     const loadScenarios = () => {
@@ -305,7 +363,7 @@ export default function ProjectionCalculator() {
   const validPhaseIndex = Math.max(1, Math.min(selectedPhase, defaultPhases.length));
   const phase = defaultPhases[validPhaseIndex - 1];
   
-  // Utiliser les paramètres du scénario actif ou les valeurs par défaut
+  // Utiliser les valeurs du scénario ou des valeurs par défaut
   const energyRate = activeScenario?.energyRate ?? 2.5;
   const maintenancePercent = activeScenario?.maintenancePercent ?? 2;
   const fixedCostsBase = activeScenario?.fixedCostsBase ?? 75000;
@@ -313,8 +371,17 @@ export default function ProjectionCalculator() {
   const mwCapexCost = activeScenario?.mwCapexCost ?? 0; // Coût MW (peut être 0)
   const hearstResellPricePerKwh = activeScenario?.hearstResellPricePerKwh ?? 0.055;
   const mwAllocatedToHearst = activeScenario?.mwAllocatedToHearst ?? (dealType === "mw" ? (phase.mw * mwAllocated / 100) : 0);
+  const marginOnHardware = 8.0;
   
-  const capex = calculateCAPEX(phase.mw, defaultHardwareCosts, validPhaseIndex) + (mwCapexCost * phase.mw);
+  // RÈGLE IMPORTANTE: shareElectricity et shareSPV viennent UNIQUEMENT des jauges de cette page
+  const shareElectricityValue = shareElectricity; // Valeur UNIQUEMENT depuis la jauge/slider de cette page
+  const shareSPVValue = shareSPV; // Valeur UNIQUEMENT depuis la jauge/slider de cette page
+  const elecCost = 0.025;
+  
+  // Utiliser les coûts hardware par défaut
+  const dynamicHardwareCosts = defaultHardwareCosts;
+  
+  const capex = calculateCAPEX(phase.mw, dynamicHardwareCosts, validPhaseIndex) + (mwCapexCost * phase.mw);
   const opexMonthly = calculateOPEXMonthly(phase.mw, energyRate, capex, maintenancePercent, fixedCostsBase, fixedCostsPerMW);
 
   // Calculs selon le type de deal
@@ -331,6 +398,12 @@ export default function ProjectionCalculator() {
       mwCapexCost,
       hearstResellPricePerKwh,
       mwAllocatedToHearst,
+      // Paramètres depuis le Data Menu
+      marginOnHardware,
+      shareElectricity: shareElectricityValue,
+      shareSPV: shareSPVValue,
+      elecCost,
+      hardwareCosts: dynamicHardwareCosts, // Coûts CAPEX dynamiques
     };
     dealAResult = calculateDealA(dealAInputs);
   } else {
@@ -342,6 +415,12 @@ export default function ProjectionCalculator() {
       miningParams,
       opexPerMW,
       energyRate: energyRate, // Passe le taux d'énergie du scénario
+      // Paramètres depuis le Data Menu
+      marginOnHardware,
+      shareElectricity: shareElectricityValue,
+      shareSPV: shareSPVValue,
+      elecCost,
+      hardwareCosts: dynamicHardwareCosts, // Coûts CAPEX dynamiques
     };
     dealBResult = calculateDealB(dealBInputs);
   }
@@ -374,6 +453,12 @@ export default function ProjectionCalculator() {
           mwCapexCost,
           hearstResellPricePerKwh,
           mwAllocatedToHearst,
+          // Paramètres depuis le Data Menu
+          marginOnHardware,
+          shareElectricity: shareElectricityValue,
+          shareSPV: shareSPVValue,
+          elecCost,
+          hardwareCosts: dynamicHardwareCosts, // Coûts CAPEX dynamiques
         };
         const result = calculateDealA(inputs);
         return {
@@ -399,6 +484,12 @@ export default function ProjectionCalculator() {
           miningParams: yearMiningParams,
           opexPerMW,
           energyRate: energyRate, // Passe le taux d'énergie du scénario
+          // Paramètres depuis le Data Menu
+          marginOnHardware,
+          shareElectricity: shareElectricityValue,
+          shareSPV: shareSPVValue,
+          elecCost,
+          hardwareCosts: dynamicHardwareCosts, // Coûts CAPEX dynamiques
         };
         const result = calculateDealB(inputs);
         const hearstOpexYearly = 0; // HEARST n'a pas d'OPEX dans DealB
@@ -424,6 +515,7 @@ export default function ProjectionCalculator() {
     projectionData = [];
   }
 
+
   // Utiliser directement le nom du scénario actif depuis activeScenario
   const activeScenarioName = activeScenario?.name || null;
 
@@ -433,24 +525,37 @@ export default function ProjectionCalculator() {
       {!resultsReady && (
         <div className="relative">
           <div className="relative bg-gradient-to-br from-black via-gray-900 to-black rounded-2xl p-8 md:p-10">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div className="flex-1">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-hearst-green/30 to-hearst-green/10 rounded-2xl flex items-center justify-center border-2 border-hearst-green/50">
-                    <BarChart3 className="w-8 h-8 text-hearst-green" strokeWidth={2.5} />
-                  </div>
-                  <div>
-                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 bg-gradient-to-r from-white via-hearst-green/90 to-white bg-clip-text text-transparent">
-                      Projection Financière
-                    </h1>
-                    <p className="text-lg text-gray-300">Configurez votre deal et visualisez les projections sur 5 ans</p>
+            <div className="flex items-center gap-4 justify-end">
+              {/* Sélecteur de scénario */}
+              {scenarios.length > 0 && (
+                <div className="bg-gradient-to-br from-hearst-bg-secondary to-hearst-bg-tertiary border-2 border-hearst-grey-100/30 rounded-xl px-6 py-4">
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-3">
+                      <BarChart3 className="w-4 h-4 text-hearst-text-secondary" strokeWidth={2.5} />
+                      <div className="text-xs text-hearst-text-secondary uppercase tracking-wide">Sélectionner un scénario</div>
+                    </div>
+                    <div className="relative">
+                      <select
+                        value={selectedScenarioId}
+                        onChange={(e) => handleScenarioChange(e.target.value)}
+                        className="w-full bg-hearst-dark border-2 border-hearst-grey-100/30 rounded-lg px-4 py-3 text-white font-medium text-base appearance-none cursor-pointer hover:border-hearst-green/50 transition-colors focus:outline-none focus:border-hearst-green pr-10"
+                      >
+                        <option value="">Par défaut (aucun scénario)</option>
+                        {scenarios.map((scenario) => (
+                          <option key={scenario.id} value={scenario.id}>
+                            {scenario.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-hearst-text-secondary pointer-events-none" strokeWidth={2.5} />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
               {activeScenarioName && (
                 <div 
                   onClick={() => handleScenarioChange("")}
-                  className="bg-gradient-to-br from-hearst-green/20 to-hearst-green/10 border-2 border-hearst-green/50 rounded-xl px-6 py-4 cursor-pointer"
+                  className="bg-gradient-to-br from-hearst-green/20 to-hearst-green/10 border-2 border-hearst-green/50 rounded-xl px-6 py-4 cursor-pointer hover:border-hearst-green/70 transition-colors"
                   title="Cliquer pour désactiver le scénario"
                 >
                   <div className="relative">
@@ -459,6 +564,9 @@ export default function ProjectionCalculator() {
                       <div className="text-xs text-gray-400 uppercase tracking-wide">Scénario actif</div>
                     </div>
                     <div className="text-lg font-bold text-hearst-green">{activeScenarioName}</div>
+                    <div className="text-xs text-hearst-text-secondary mt-1">
+                      BTC: ${safeToFixed(miningParams.btcPrice, 0)}k • Difficulté: {safeToFixed(miningParams.networkDifficulty, 1)}T
+                    </div>
                   </div>
                 </div>
               )}
@@ -481,253 +589,237 @@ export default function ProjectionCalculator() {
             </div>
           </div>
         
-          {/* Grille harmonisée : Jauges */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 mt-10">
-            {/* Jauge Share Revenu - Ultra Premium */}
-            <div 
-              onClick={() => setDealType("revenue")}
-              className={`
-                relative cursor-pointer rounded-2xl p-6 overflow-hidden flex flex-col items-center justify-center h-full min-h-[260px] transition-all duration-300 bg-hearst-bg-secondary
-              `}
-            >
-              {/* Premium Sidebar Right - Visible when selected */}
-              <div className={`
-                absolute -right-1 top-0 bottom-0 w-1.5 transition-all duration-500 ease-in-out z-0
-                ${dealType === "revenue" 
-                  ? "bg-gradient-to-b from-transparent via-white to-transparent opacity-60 shadow-[0_0_15px_rgba(255,255,255,0.4)] blur-[1px]" 
-                  : "opacity-0"
-                }
-              `}></div>
-              
-              <div className="relative z-10 text-center w-full flex flex-col items-center justify-center">
-                <div className="text-base font-semibold text-hearst-text-secondary mb-6 uppercase tracking-wider">
-                  Share Revenu
-                </div>
-                <div className="relative w-48 h-48 mx-auto mb-6">
-                  <svg className="transform -rotate-90 w-48 h-48 relative z-10" viewBox="0 0 80 80">
-                    <circle
-                      cx="40"
-                      cy="40"
-                      r="35"
-                      stroke="#8A1538"
-                      strokeWidth="6"
-                      fill="none"
-                      className="opacity-100"
-                      style={{ filter: 'drop-shadow(0 0 2px rgba(138, 21, 56, 0.2))' }}
-                    />
-                    <circle
-                      cx="40"
-                      cy="40"
-                      r="35"
-                      stroke="#7CFF5A"
-                      strokeWidth="6"
-                      fill="none"
-                      strokeDasharray={`${2 * Math.PI * 35}`}
-                      strokeDashoffset={`${2 * Math.PI * 35 * (1 - (revenueShare - revenueShareMin) / (revenueShareMax - revenueShareMin))}`}
-                      strokeLinecap="round"
-                      className="transition-all duration-500"
-                      style={{ filter: 'drop-shadow(0 0 2px rgba(124, 255, 90, 0.2))' }}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center z-20">
-                    <div className="text-center">
-                      <div className="text-4xl md:text-5xl font-bold text-white">{revenueShare}</div>
-                      <div className="text-base text-hearst-text-secondary font-semibold">%</div>
-                    </div>
+        {/* Grille harmonisée : Jauges */}
+        {/* IMPORTANT: Les valeurs shareSPV et shareElectricity sont UNIQUEMENT contrôlées par ces jauges/sliders */}
+        {/* Elles ne peuvent PAS être modifiées depuis le Data Menu ou ailleurs */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 mt-10">
+          {/* Jauge Share SPV - Ultra Premium - Source unique de vérité pour shareSPV */}
+          <div className="relative rounded-2xl p-6 overflow-hidden flex flex-col items-center justify-center h-full min-h-[260px] transition-all duration-300 bg-hearst-bg-secondary">
+            <div className="relative z-10 text-center w-full flex flex-col items-center justify-center">
+              <div className="text-base font-semibold text-hearst-text-secondary mb-6 uppercase tracking-wider">
+                Share SPV
+              </div>
+              <div className="relative w-48 h-48 mx-auto mb-6">
+                <svg className="transform -rotate-90 w-48 h-48 relative z-10" viewBox="0 0 80 80">
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="35"
+                    stroke="#8A1538"
+                    strokeWidth="6"
+                    fill="none"
+                    className="opacity-100"
+                    style={{ filter: 'drop-shadow(0 0 2px rgba(138, 21, 56, 0.2))' }}
+                  />
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="35"
+                    stroke="#7CFF5A"
+                    strokeWidth="6"
+                    fill="none"
+                    strokeDasharray={`${2 * Math.PI * 35}`}
+                    strokeDashoffset={`${2 * Math.PI * 35 * (1 - (shareSPV - shareSPVMin) / (shareSPVMax - shareSPVMin))}`}
+                    strokeLinecap="round"
+                    className="transition-all duration-500"
+                    style={{ filter: 'drop-shadow(0 0 2px rgba(124, 255, 90, 0.2))' }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center z-20">
+                  <div className="text-center">
+                    <div className="text-4xl md:text-5xl font-bold text-white">{shareSPV}</div>
+                    <div className="text-base text-hearst-text-secondary font-semibold">%</div>
                   </div>
                 </div>
-                <div className={`text-base font-semibold ${dealType === "revenue" ? "text-white" : "text-hearst-text-secondary"}`}>
-                  {dealType === "revenue" ? "✓ Actif" : "Cliquez pour activer"}
-                </div>
-              </div>
-            </div>
-
-            {/* Jauge MW Allocated - Ultra Premium */}
-            <div 
-              onClick={() => setDealType("mw")}
-              className={`
-                relative cursor-pointer rounded-2xl p-6 overflow-hidden flex flex-col items-center justify-center h-full min-h-[260px] transition-all duration-300 bg-hearst-bg-secondary
-              `}
-            >
-              {/* Premium Sidebar Left - Visible when selected */}
-              <div className={`
-                absolute -left-1 top-0 bottom-0 w-1.5 transition-all duration-500 ease-in-out z-0
-                ${dealType === "mw" 
-                  ? "bg-gradient-to-b from-transparent via-white to-transparent opacity-60 shadow-[0_0_15px_rgba(255,255,255,0.4)] blur-[1px]" 
-                  : "opacity-0"
-                }
-              `}></div>
-              
-              {/* Premium Sidebar Right - Visible when selected */}
-              <div className={`
-                absolute -right-1 top-0 bottom-0 w-1.5 transition-all duration-500 ease-in-out z-0
-                ${dealType === "mw" 
-                  ? "bg-gradient-to-b from-transparent via-white to-transparent opacity-60 shadow-[0_0_15px_rgba(255,255,255,0.4)] blur-[1px]" 
-                  : "opacity-0"
-                }
-              `}></div>
-              
-              <div className="relative z-10 text-center w-full flex flex-col items-center justify-center">
-                <div className="text-base font-semibold text-hearst-text-secondary mb-6 uppercase tracking-wider">
-                  MW Allocated
-                </div>
-                <div className="relative w-48 h-48 mx-auto mb-6">
-                  <svg className="transform -rotate-90 w-48 h-48 relative z-10" viewBox="0 0 80 80">
-                    <circle
-                      cx="40"
-                      cy="40"
-                      r="35"
-                      stroke="#8A1538"
-                      strokeWidth="6"
-                      fill="none"
-                      className="opacity-100"
-                      style={{ filter: 'drop-shadow(0 0 2px rgba(138, 21, 56, 0.2))' }}
-                    />
-                    <circle
-                      cx="40"
-                      cy="40"
-                      r="35"
-                      stroke="#7CFF5A"
-                      strokeWidth="6"
-                      fill="none"
-                      strokeDasharray={`${2 * Math.PI * 35}`}
-                      strokeDashoffset={`${2 * Math.PI * 35 * (1 - (mwAllocated - mwAllocatedMin) / (mwAllocatedMax - mwAllocatedMin))}`}
-                      strokeLinecap="round"
-                      className="transition-all duration-500"
-                      style={{ filter: 'drop-shadow(0 0 2px rgba(124, 255, 90, 0.2))' }}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center z-20">
-                    <div className="text-center">
-                      <div className="text-4xl md:text-5xl font-bold text-white">{mwAllocated}</div>
-                      <div className="text-base text-hearst-text-secondary font-semibold">%</div>
-                    </div>
-                  </div>
-                </div>
-                <div className={`text-base font-semibold transition-all ${dealType === "mw" ? "text-white" : "text-hearst-text-secondary"}`}>
-                  {dealType === "mw" ? "✓ Actif" : "Cliquez pour activer"}
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-        {/* Sliders - Harmonisés */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8 mb-10">
-          {dealType === "revenue" ? (
-            <div className="md:col-span-2 flex justify-center">
-              <div className="w-full max-w-md">
-                <div className="flex items-center gap-3">
-                  <span className="text-white text-sm font-semibold">0%</span>
-                  <div className="slider-wrapper flex-1" style={{
-                    '--slider-progress': `${((revenueShare - revenueShareMin) / (revenueShareMax - revenueShareMin)) * 100}%`,
-                    'background': '#8A1538'
-                  } as React.CSSProperties}>
-                    <input
-                      ref={revenueSliderRef}
-                      type="range"
-                      min={revenueShareMin}
-                      max={revenueShareMax}
-                      step="1"
-                      value={revenueShare}
-                      onChange={(e) => setRevenueShare(parseInt(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-                  <span className="text-white text-sm font-semibold">30%</span>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="md:col-span-2 flex justify-center">
-              <div className="w-full max-w-md">
-                <div className="flex items-center gap-3">
-                  <span className="text-white text-sm font-semibold">0%</span>
-                  <div className="slider-wrapper flex-1" style={{
-                    '--slider-progress': `${((mwAllocated - mwAllocatedMin) / (mwAllocatedMax - mwAllocatedMin)) * 100}%`,
-                    'background': '#8A1538'
-                  } as React.CSSProperties}>
-                    <input
-                      ref={mwSliderRef}
-                      type="range"
-                      min={mwAllocatedMin}
-                      max={mwAllocatedMax}
-                      step="1"
-                      value={mwAllocated}
-                      onChange={(e) => setMwAllocated(parseInt(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-                  <span className="text-white text-sm font-semibold">30%</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Séparateur */}
-        <div className="border-t border-hearst-grey-100/30 my-10"></div>
-
-        {/* Récapitulatif */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-          {/* Type de Deal */}
-          <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
-            <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-white/60 to-transparent opacity-50"></div>
-            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/60 to-transparent opacity-0 group-hover:opacity-50 transition-opacity duration-500 ease-in-out"></div>
-            <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
-              <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
-                <Percent className="w-10 h-10 text-white" strokeWidth={2.5} />
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-semibold text-white uppercase tracking-wide">Type de Deal</div>
-              <div className="text-2xl font-bold text-white mt-4">
-                {dealType === "revenue" ? "Share Revenu" : "MW Allocated"}
               </div>
             </div>
           </div>
 
-          {/* Valeur du Deal */}
-          <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
-            <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-white/60 to-transparent opacity-50"></div>
-            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/60 to-transparent opacity-0 group-hover:opacity-50 transition-opacity duration-500 ease-in-out"></div>
-            <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
-              <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-10 h-10 text-white" strokeWidth={2.5} />
+          {/* Jauge Share Electricity - Ultra Premium - Source unique de vérité pour shareElectricity */}
+          <div className="relative rounded-2xl p-6 overflow-hidden flex flex-col items-center justify-center h-full min-h-[260px] transition-all duration-300 bg-hearst-bg-secondary">
+            <div className="relative z-10 text-center w-full flex flex-col items-center justify-center">
+              <div className="text-base font-semibold text-hearst-text-secondary mb-6 uppercase tracking-wider">
+                Share Electricity
               </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-semibold text-white uppercase tracking-wide">{dealType === "revenue" ? "Share Revenu" : "MW Allocated"}</div>
-              <div className="text-2xl font-bold text-white mt-4">
-                {dealType === "revenue" ? `${revenueShare}%` : `${mwAllocated}%`}
-              </div>
-            </div>
-          </div>
-
-          {/* Scénario Actif */}
-          <div className="p-5 bg-transparent rounded-xl border-2 border-transparent transition-all duration-300 cursor-pointer relative group">
-            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"></div>
-            <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
-              <div className="w-20 h-20 bg-transparent rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-10 h-10 text-white" strokeWidth={2.5} />
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-semibold text-white uppercase tracking-wide">Scénario</div>
-              <div className="text-2xl font-bold text-white mt-4">
-                {activeScenario?.name || "Par défaut"}
-              </div>
-              {activeScenario && (
-                <div className="text-lg text-white mt-1 opacity-75">
-                  BTC: ${safeToFixed(miningParams.btcPrice, 0)}k
+              <div className="relative w-48 h-48 mx-auto mb-6">
+                <svg className="transform -rotate-90 w-48 h-48 relative z-10" viewBox="0 0 80 80">
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="35"
+                    stroke="#8A1538"
+                    strokeWidth="6"
+                    fill="none"
+                    className="opacity-100"
+                    style={{ filter: 'drop-shadow(0 0 2px rgba(138, 21, 56, 0.2))' }}
+                  />
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="35"
+                    stroke="#7CFF5A"
+                    strokeWidth="6"
+                    fill="none"
+                    strokeDasharray={`${2 * Math.PI * 35}`}
+                    strokeDashoffset={`${2 * Math.PI * 35 * (1 - (shareElectricity - shareElectricityMin) / (shareElectricityMax - shareElectricityMin))}`}
+                    strokeLinecap="round"
+                    className="transition-all duration-500"
+                    style={{ filter: 'drop-shadow(0 0 2px rgba(124, 255, 90, 0.2))' }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center z-20">
+                  <div className="text-center">
+                    <div className="text-4xl md:text-5xl font-bold text-white">{shareElectricity}</div>
+                    <div className="text-base text-hearst-text-secondary font-semibold">%</div>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Bouton Lancer le Calcul */}
-        <div className="flex justify-center mt-6 relative">
+        {/* Sliders pour régler les jauges dynamiquement */}
+        {/* RÈGLE: Ces sliders sont la SEULE source de modification pour shareSPV et shareElectricity */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+          {/* Slider Share SPV - Contrôle exclusif de la valeur shareSPV */}
+          <div className="w-full">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-base font-semibold text-white uppercase tracking-wider">
+                Share SPV
+              </label>
+              <span className="text-lg font-bold text-hearst-green">{shareSPV}%</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-white text-sm font-semibold min-w-[35px] text-right">{shareSPVMin}%</span>
+              <div className="slider-wrapper flex-1" style={{
+                '--slider-progress': `${((shareSPV - shareSPVMin) / (shareSPVMax - shareSPVMin)) * 100}%`,
+                'background': '#8A1538'
+              } as React.CSSProperties}>
+                <input
+                  ref={shareSPVSliderRef}
+                  type="range"
+                  min={shareSPVMin}
+                  max={shareSPVMax}
+                  step="1"
+                  value={shareSPV}
+                  onChange={(e) => setShareSPV(parseInt(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+              <span className="text-white text-sm font-semibold min-w-[35px]">{shareSPVMax}%</span>
+            </div>
+          </div>
+
+          {/* Slider Share Electricity - Contrôle exclusif de la valeur shareElectricity */}
+          <div className="w-full">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-base font-semibold text-white uppercase tracking-wider">
+                Share Electricity
+              </label>
+              <span className="text-lg font-bold text-hearst-green">{shareElectricity}%</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-white text-sm font-semibold min-w-[35px] text-right">{shareElectricityMin}%</span>
+              <div className="slider-wrapper flex-1" style={{
+                '--slider-progress': `${((shareElectricity - shareElectricityMin) / (shareElectricityMax - shareElectricityMin)) * 100}%`,
+                'background': '#8A1538'
+              } as React.CSSProperties}>
+                <input
+                  ref={shareElectricitySliderRef}
+                  type="range"
+                  min={shareElectricityMin}
+                  max={shareElectricityMax}
+                  step="1"
+                  value={shareElectricity}
+                  onChange={(e) => setShareElectricity(parseInt(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+              <span className="text-white text-sm font-semibold min-w-[35px]">{shareElectricityMax}%</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Conditions du Scénario - 8 boxes */}
+        <div className="mb-10">
+          <Card variant="dark" className="bg-gradient-to-br from-hearst-bg-secondary to-hearst-bg-tertiary">
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold text-white mb-2">Conditions du Scénario</h3>
+              <p className="text-hearst-text-secondary text-sm">
+                {activeScenario ? activeScenario.name : "Paramètres par défaut"}
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Prix BTC */}
+              <div className="text-center p-4 bg-hearst-bg-tertiary/50 rounded-lg border border-hearst-grey-100/20">
+                <div className="text-xs text-hearst-text-secondary uppercase tracking-wide mb-1">Prix BTC</div>
+                <div className="text-lg font-bold text-white">
+                  ${safeToFixed((activeScenario?.btcPrice ?? miningParams.btcPrice) / 1000, 1)}K
+                </div>
+              </div>
+
+              {/* Difficulté */}
+              <div className="text-center p-4 bg-hearst-bg-tertiary/50 rounded-lg border border-hearst-grey-100/20">
+                <div className="text-xs text-hearst-text-secondary uppercase tracking-wide mb-1">Difficulté</div>
+                <div className="text-lg font-bold text-white">
+                  {safeToFixed((activeScenario?.networkDifficulty ?? miningParams.networkDifficulty) / 1000000000000, 2)}T
+                </div>
+              </div>
+
+              {/* Hashrate/MW */}
+              <div className="text-center p-4 bg-hearst-bg-tertiary/50 rounded-lg border border-hearst-grey-100/20">
+                <div className="text-xs text-hearst-text-secondary uppercase tracking-wide mb-1">Hashrate/MW</div>
+                <div className="text-lg font-bold text-white">
+                  {safeToFixed(activeScenario?.hashratePerMW ?? miningParams.hashratePerMW, 2)} PH
+                </div>
+              </div>
+
+              {/* Uptime */}
+              <div className="text-center p-4 bg-hearst-bg-tertiary/50 rounded-lg border border-hearst-grey-100/20">
+                <div className="text-xs text-hearst-text-secondary uppercase tracking-wide mb-1">Uptime</div>
+                <div className="text-lg font-bold text-white">
+                  {safeToFixed(activeScenario?.uptime ?? miningParams.uptime, 1)}%
+                </div>
+              </div>
+
+              {/* Energy Rate */}
+              <div className="text-center p-4 bg-hearst-bg-tertiary/50 rounded-lg border border-hearst-grey-100/20">
+                <div className="text-xs text-hearst-text-secondary uppercase tracking-wide mb-1">Energy Rate</div>
+                <div className="text-lg font-bold text-white">
+                  {safeToFixed(energyRate, 2)}¢/kWh
+                </div>
+              </div>
+
+              {/* Maintenance */}
+              <div className="text-center p-4 bg-hearst-bg-tertiary/50 rounded-lg border border-hearst-grey-100/20">
+                <div className="text-xs text-hearst-text-secondary uppercase tracking-wide mb-1">Maintenance</div>
+                <div className="text-lg font-bold text-white">
+                  {safeToFixed(maintenancePercent, 1)}%
+                </div>
+              </div>
+
+              {/* Pool Fee */}
+              <div className="text-center p-4 bg-hearst-bg-tertiary/50 rounded-lg border border-hearst-grey-100/20">
+                <div className="text-xs text-hearst-text-secondary uppercase tracking-wide mb-1">Pool Fee</div>
+                <div className="text-lg font-bold text-white">
+                  {safeToFixed(activeScenario?.poolFee ?? miningParams.poolFee, 2)}%
+                </div>
+              </div>
+
+              {/* Block Reward */}
+              <div className="text-center p-4 bg-hearst-bg-tertiary/50 rounded-lg border border-hearst-grey-100/20">
+                <div className="text-xs text-hearst-text-secondary uppercase tracking-wide mb-1">Block Reward</div>
+                <div className="text-lg font-bold text-white">
+                  {safeToFixed(activeScenario?.blockReward ?? miningParams.blockReward, 4)} BTC
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Bouton Lancer le Calcul - En bas de la Card Configuration du Deal */}
+        <div className="flex justify-center mt-8 mb-8 relative">
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-white to-transparent"></div>
           <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-white to-transparent"></div>
           <button
@@ -777,7 +869,6 @@ export default function ProjectionCalculator() {
           </div>
         )}
 
-        <div className="pb-[49px]"></div>
       </Card>
       </div>
       )}
@@ -924,7 +1015,7 @@ export default function ProjectionCalculator() {
               <div className="text-center">
                 <div className="text-lg font-semibold text-white uppercase tracking-wide">Annualize net Revenues</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed(0, 2)}M
+                  ${safeToFixed(setup.qatarFigures.annualizedNetRevenuesUSD / 1000000, 2)}M
                 </div>
                 <button 
                   onClick={() => setOpenPopup("qatar-annualize-net-revenues")}
@@ -947,7 +1038,7 @@ export default function ProjectionCalculator() {
               <div className="text-center">
                 <div className="text-lg font-semibold text-white uppercase tracking-wide">Annualize net Profit</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed(0, 2)}M
+                  ${safeToFixed(setup.qatarFigures.annualizedNetProfitsUSD / 1000000, 2)}M
                 </div>
                 <button 
                   onClick={() => setOpenPopup("qatar-annualize-net-profit")}
@@ -970,7 +1061,7 @@ export default function ProjectionCalculator() {
               <div className="text-center">
                 <div className="text-lg font-semibold text-white uppercase tracking-wide">ROI</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed(0, 2)}M
+                  {safeToFixed(setup.qatarFigures.roiPercent, 2)}%
                 </div>
                 <button 
                   onClick={() => setOpenPopup("qatar-roi")}
@@ -993,7 +1084,7 @@ export default function ProjectionCalculator() {
               <div className="text-center">
                 <div className="text-lg font-semibold text-white uppercase tracking-wide">Cost per BTC / 1</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed(0, 2)}M
+                  ${safeToFixed(setup.qatarFigures.costPerBtcUSD / 1000, 2)}K
                 </div>
                 <button 
                   onClick={() => setOpenPopup("qatar-cost-per-btc")}
@@ -1135,7 +1226,7 @@ export default function ProjectionCalculator() {
               <div className="text-center">
                 <div className="text-lg font-semibold text-white uppercase tracking-wide">Margin on hardware</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed(0, 2)}M
+                  ${safeToFixed(setup.hearstFigures.marginOnHardwareUSD / 1000000, 2)}M
                 </div>
                 <button 
                   onClick={() => setOpenPopup("hearst-margin-on-hardware")}
@@ -1158,7 +1249,7 @@ export default function ProjectionCalculator() {
               <div className="text-center">
                 <div className="text-lg font-semibold text-white uppercase tracking-wide">Share Electricity</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed(0, 2)}M
+                  ${safeToFixed(setup.hearstFigures.shareElectricityYearlyUSD / 1000000, 2)}M
                 </div>
                 <button 
                   onClick={() => setOpenPopup("hearst-share-electricity")}
@@ -1181,7 +1272,7 @@ export default function ProjectionCalculator() {
               <div className="text-center">
                 <div className="text-lg font-semibold text-white uppercase tracking-wide">Share Revenu</div>
                 <div className="text-2xl font-bold text-white mt-4">
-                  ${safeToFixed(0, 2)}M
+                  ${safeToFixed(setup.hearstFigures.shareSpvYearlyUSD / 1000000, 2)}M
                 </div>
                 <button 
                   onClick={() => setOpenPopup("hearst-share-revenu")}
@@ -1271,6 +1362,13 @@ export default function ProjectionCalculator() {
                 stroke="#A3FF8B"
                 strokeWidth={3}
                 name="HEARST"
+              />
+              <Line
+                type="monotone"
+                dataKey="qatar"
+                stroke="#8A1538"
+                strokeWidth={3}
+                name="Qatar"
               />
               <Line
                 type="monotone"
@@ -1533,7 +1631,7 @@ export default function ProjectionCalculator() {
                         <p className="text-white text-lg">Infrastructure = (Infrastructure/MW + Cooling/MW + Networking/MW) × MW</p>
                         <div className="pt-4 border-t-2 border-[#8A1538]/30">
                           <div className="text-[#8A1538] font-bold text-lg mb-3">Résultat :</div>
-                          <p className="text-3xl font-bold text-white">${safeToFixed((defaultHardwareCosts.infrastructurePerMW + defaultHardwareCosts.coolingPerMW + defaultHardwareCosts.networkingPerMW) * phase.mw / 1000000, 2)}M</p>
+                          <p className="text-3xl font-bold text-white">${safeToFixed((dynamicHardwareCosts.infrastructurePerMW + dynamicHardwareCosts.coolingPerMW + dynamicHardwareCosts.networkingPerMW) * phase.mw / 1000000, 2)}M</p>
                         </div>
                       </div>
                     </div>
@@ -1573,7 +1671,7 @@ export default function ProjectionCalculator() {
                         <p className="text-white text-lg">Hardware = ASIC/MW × MW</p>
                         <div className="pt-4 border-t-2 border-[#8A1538]/30">
                           <div className="text-[#8A1538] font-bold text-lg mb-3">Résultat :</div>
-                          <p className="text-3xl font-bold text-white">${safeToFixed(defaultHardwareCosts.asicPerMW * phase.mw / 1000000, 2)}M</p>
+                          <p className="text-3xl font-bold text-white">${safeToFixed(dynamicHardwareCosts.asicPerMW * phase.mw / 1000000, 2)}M</p>
                         </div>
                       </div>
                     </div>
@@ -1693,7 +1791,7 @@ export default function ProjectionCalculator() {
                         <p className="text-white text-lg">Infrastructure = (Infrastructure/MW + Cooling/MW + Networking/MW) × MW</p>
                         <div className="pt-4 border-t-2 border-hearst-green/30">
                           <div className="text-hearst-green font-bold text-lg mb-3">Résultat :</div>
-                          <p className="text-3xl font-bold text-white">${safeToFixed((defaultHardwareCosts.infrastructurePerMW + defaultHardwareCosts.coolingPerMW + defaultHardwareCosts.networkingPerMW) * phase.mw / 1000000, 2)}M</p>
+                          <p className="text-3xl font-bold text-white">${safeToFixed((dynamicHardwareCosts.infrastructurePerMW + dynamicHardwareCosts.coolingPerMW + dynamicHardwareCosts.networkingPerMW) * phase.mw / 1000000, 2)}M</p>
                         </div>
                       </div>
                     </div>
@@ -1733,7 +1831,7 @@ export default function ProjectionCalculator() {
                         <p className="text-white text-lg">Hardware = ASIC/MW × MW</p>
                         <div className="pt-4 border-t-2 border-hearst-green/30">
                           <div className="text-hearst-green font-bold text-lg mb-3">Résultat :</div>
-                          <p className="text-3xl font-bold text-white">${safeToFixed(defaultHardwareCosts.asicPerMW * phase.mw / 1000000, 2)}M</p>
+                          <p className="text-3xl font-bold text-white">${safeToFixed(dynamicHardwareCosts.asicPerMW * phase.mw / 1000000, 2)}M</p>
                         </div>
                       </div>
                     </div>

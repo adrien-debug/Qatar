@@ -5,17 +5,7 @@ import Card from "./Card";
 import { Scenario } from "./ScenarioManager";
 import { MiningParams, defaultMiningParams } from "@/lib/financial-calculations";
 import { Bitcoin, TrendingUp, Zap, Activity, Percent, Settings2, Info } from "lucide-react";
-
-// Helper function pour formater les nombres et éviter NaN
-const safeNumber = (value: number | undefined | null): number => {
-  if (value === undefined || value === null || isNaN(value)) return 0;
-  return value;
-};
-
-const safeToFixed = (value: number | undefined | null, decimals: number): string => {
-  const num = safeNumber(value);
-  return isNaN(num) ? "0" : num.toFixed(decimals);
-};
+import { safeNumber, safeToFixed } from "@/lib/utils";
 
 // Composant InfoTooltip pour afficher les notes de calcul
 const InfoTooltip = ({ note }: { note: string }) => {

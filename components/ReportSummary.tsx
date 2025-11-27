@@ -1,4 +1,5 @@
 import { BarChart3, Zap } from "lucide-react";
+import { safeToFixed, formatCurrency } from "@/lib/utils";
 
 interface ReportSummaryProps {
   dealType: "revenue" | "mw";
@@ -9,26 +10,6 @@ interface ReportSummaryProps {
   phaseTimeline: string;
   capex: number;
 }
-
-const safeToFixed = (value: number | undefined | null, decimals: number): string => {
-  if (value === undefined || value === null || isNaN(value)) return "0";
-  return value.toFixed(decimals);
-};
-
-const formatCurrency = (value: number | undefined | null): string => {
-  const num = value ?? 0;
-  if (isNaN(num) || num === 0) return "$0";
-  
-  if (Math.abs(num) >= 1000000) {
-    const millions = num / 1000000;
-    return `$${safeToFixed(millions, millions >= 10 ? 1 : 2)}M`;
-  } else if (Math.abs(num) >= 1000) {
-    const thousands = num / 1000;
-    return `$${safeToFixed(thousands, thousands >= 10 ? 1 : 2)}K`;
-  } else {
-    return `$${safeToFixed(num, 2)}`;
-  }
-};
 
 export default function ReportSummary({
   dealType,

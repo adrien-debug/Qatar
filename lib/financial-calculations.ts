@@ -11,6 +11,8 @@ export interface HardwareCosts {
   infrastructurePerMW: number;
   coolingPerMW: number;
   networkingPerMW: number;
+  constructionCostPerMW?: number; // Prix de construction par MW
+  hardwareShippingPerMW?: number; // Prix de shipping hardware custom par MW
 }
 
 export interface EnergyConfig {
@@ -53,6 +55,7 @@ export interface DealAInputs {
   shareElectricity?: number; // % (ex: 15%)
   shareSPV?: number; // % (ex: 8%)
   elecCost?: number; // $/kWh (ex: 0.025)
+  hardwareCosts?: HardwareCosts; // Coûts hardware dynamiques (optionnel)
 }
 
 export interface DealBInputs {
@@ -67,6 +70,7 @@ export interface DealBInputs {
   shareElectricity?: number; // % (ex: 15%)
   shareSPV?: number; // % (ex: 8%)
   elecCost?: number; // $/kWh (ex: 0.025)
+  hardwareCosts?: HardwareCosts; // Coûts hardware dynamiques (optionnel)
 }
 
 export interface DealAResult {
@@ -183,7 +187,9 @@ export function calculateCAPEX(
     hardwareCosts.asicPerMW +
     hardwareCosts.infrastructurePerMW +
     hardwareCosts.coolingPerMW +
-    hardwareCosts.networkingPerMW;
+    hardwareCosts.networkingPerMW +
+    (hardwareCosts.constructionCostPerMW || 0) +
+    (hardwareCosts.hardwareShippingPerMW || 0);
   
   let discount = 0;
   if (phase === 2) discount = 0.05;
@@ -249,6 +255,8 @@ export function calculateCAPEXBreakdown(
   hardware: number;
   cooling: number;
   networking: number;
+  construction: number;
+  shipping: number;
   total: number;
 } {
   let discount = 0;
@@ -259,9 +267,11 @@ export function calculateCAPEXBreakdown(
   const hardware = hardwareCosts.asicPerMW * mw * (1 - discount);
   const cooling = hardwareCosts.coolingPerMW * mw * (1 - discount);
   const networking = hardwareCosts.networkingPerMW * mw * (1 - discount);
-  const total = infrastructure + hardware + cooling + networking;
+  const construction = (hardwareCosts.constructionCostPerMW || 0) * mw * (1 - discount);
+  const shipping = (hardwareCosts.hardwareShippingPerMW || 0) * mw * (1 - discount);
+  const total = infrastructure + hardware + cooling + networking + construction + shipping;
   
-  return { infrastructure, hardware, cooling, networking, total };
+  return { infrastructure, hardware, cooling, networking, construction, shipping, total };
 }
 
 // Deal A: Revenue Share Model
@@ -297,9 +307,10 @@ export function calculateDealA(inputs: DealAInputs): DealAResult {
   
   // Revenus supplémentaires depuis le Google Sheets (si fournis)
   // Calculer les valeurs du contrat hardware
+  const hardwareCosts = inputs.hardwareCosts || defaultHardwareCosts;
   const capexBreakdown = calculateCAPEXBreakdown(
     inputs.mw,
-    defaultHardwareCosts,
+    hardwareCosts,
     inputs.phase,
     inputs.mwCapexCost
   );
@@ -308,17 +319,27 @@ export function calculateDealA(inputs: DealAInputs): DealAResult {
   // Calculer les coûts d'électricité totaux annuels
   const totalElectricityCostYearly = inputs.mw * 1000 * 8760 * ((inputs.elecCost ?? 0.025) || 0.025);
   
-  // Pour SPV, on utilise un pourcentage des revenus BTC (à ajuster selon le modèle métier)
-  const totalSPVRevenueYearly = qatarBtcRevenueYearly * (inputs.shareSPV ? inputs.shareSPV / 100 : 0);
+  // Pour SPV, on utilise un pourcentage des revenus BTC totaux (HEARST + Qatar)
+  const totalBtcRevenueYearly = hearstBtcRevenueYearly + qatarBtcRevenueYearly;
+  const totalSPVRevenueYearly = totalBtcRevenueYearly * (inputs.shareSPV ? inputs.shareSPV / 100 : 0);
   
   // Revenus HEARST depuis le spreadsheet
   const marginOnHardwarePct = inputs.marginOnHardware ?? 8.0;
   const shareElectricityPct = inputs.shareElectricity ?? 15.0;
   const shareSPVPct = inputs.shareSPV ?? 8.0;
   
-  const hearstMarginOnHardwareYearly = totalHardwareContractValue * (marginOnHardwarePct / 100);
-  const hearstShareElectricityYearly = totalElectricityCostYearly * (shareElectricityPct / 100);
-  const hearstShareSPVYearly = totalSPVRevenueYearly * (shareSPVPct / 100);
+  // Utiliser le revenueSharePercent de la jauge pour calculer les parts HEARST dynamiquement
+  // Les revenus supplémentaires sont proportionnels au revenueShare
+  const revenueSharePct = inputs.revenueSharePercent / 100;
+  
+  // Margin on Hardware: calculé sur la base totale, puis proportionnel au revenueShare
+  const hearstMarginOnHardwareYearly = totalHardwareContractValue * (marginOnHardwarePct / 100) * revenueSharePct;
+  
+  // Share Electricity: calculé sur la base totale, puis proportionnel au revenueShare
+  const hearstShareElectricityYearly = totalElectricityCostYearly * (shareElectricityPct / 100) * revenueSharePct;
+  
+  // Share SPV: calculé sur la base totale, puis proportionnel au revenueShare
+  const hearstShareSPVYearly = totalSPVRevenueYearly * (shareSPVPct / 100) * revenueSharePct;
   
   // Revenus totaux HEARST (BTC + électricité + margin hardware + share electricity + share SPV)
   const hearstAdditionalRevenueYearly = hearstMarginOnHardwareYearly + hearstShareElectricityYearly + hearstShareSPVYearly;
@@ -418,9 +439,10 @@ export function calculateDealB(inputs: DealBInputs): DealBResult {
   // Revenus supplémentaires depuis le Google Sheets (si fournis)
   // Pour Deal B, les revenus sont proportionnels aux MW alloués
   const mwSharePct = inputs.mwSharePercent / 100;
+  const hardwareCosts = inputs.hardwareCosts || defaultHardwareCosts;
   const capexBreakdown = calculateCAPEXBreakdown(
     inputs.totalMW,
-    defaultHardwareCosts,
+    hardwareCosts,
     inputs.phase,
     undefined
   );
@@ -431,14 +453,16 @@ export function calculateDealB(inputs: DealBInputs): DealBResult {
   const totalElectricityCostYearly = inputs.totalMW * 1000 * 8760 * elecCostPerKwh;
   
   // Pour SPV, on utilise un pourcentage des revenus BTC totaux
-  const totalSPVRevenueYearly = (hearstMonthlyRevenue + qatarMonthlyRevenue) * 12;
+  const totalBtcRevenueYearly = (hearstMonthlyRevenue + qatarMonthlyRevenue) * 12;
+  const totalSPVRevenueYearly = totalBtcRevenueYearly * (inputs.shareSPV ? inputs.shareSPV / 100 : 0);
   
-  // Revenus HEARST depuis le spreadsheet (proportionnels aux MW alloués)
+  // Revenus HEARST depuis le spreadsheet (proportionnels aux MW alloués via mwSharePct)
   const marginOnHardwarePct = inputs.marginOnHardware ?? 8.0;
   const shareElectricityPct = inputs.shareElectricity ?? 15.0;
   const shareSPVPct = inputs.shareSPV ?? 8.0;
   
-  // Les revenus sont calculés sur la base totale mais proportionnels aux MW alloués
+  // Les revenus sont calculés sur la base totale mais proportionnels aux MW alloués (mwSharePct)
+  // mwSharePct vient directement de la jauge MW Allocated
   const hearstMarginOnHardwareYearly = totalHardwareContractValue * (marginOnHardwarePct / 100) * mwSharePct;
   const hearstShareElectricityYearly = totalElectricityCostYearly * (shareElectricityPct / 100) * mwSharePct;
   const hearstShareSPVYearly = totalSPVRevenueYearly * (shareSPVPct / 100) * mwSharePct;
@@ -494,6 +518,8 @@ export const defaultHardwareCosts: HardwareCosts = {
   infrastructurePerMW: 180000,
   coolingPerMW: 90000,
   networkingPerMW: 30000,
+  constructionCostPerMW: 0, // Prix de construction par MW (à définir)
+  hardwareShippingPerMW: 0, // Prix de shipping hardware custom par MW (à définir)
 };
 
 export const defaultEnergyConfig: EnergyConfig = {
@@ -503,11 +529,11 @@ export const defaultEnergyConfig: EnergyConfig = {
 };
 
 export const defaultMiningParams: MiningParams = {
-  btcPrice: 0,
-  networkDifficulty: 0, // T
-  hashratePerMW: 0, // PH
-  blockReward: 0,
+  btcPrice: 65000, // $65,000 par défaut (valeur réaliste)
+  networkDifficulty: 100000000000000, // 100T par défaut (valeur réaliste)
+  hashratePerMW: 2.5, // 2.5 PH par MW par défaut (valeur réaliste)
+  blockReward: 3.125, // 3.125 BTC par bloc (halving actuel)
   uptime: 90, // Default: 90%
-  poolFee: 0,
+  poolFee: 1, // 1% par défaut (valeur réaliste)
 };
 

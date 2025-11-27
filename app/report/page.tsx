@@ -24,17 +24,7 @@ import ReportProjections from "@/components/ReportProjections";
 import ReportProjectionsDetails from "@/components/ReportProjectionsDetails";
 import ReportParams from "@/components/ReportParams";
 import ReportFooter from "@/components/ReportFooter";
-
-// Helper function pour formater les nombres et éviter NaN
-const safeNumber = (value: number | undefined | null): number => {
-  if (value === undefined || value === null || isNaN(value)) return 0;
-  return value;
-};
-
-const safeToFixed = (value: number | undefined | null, decimals: number): string => {
-  const num = safeNumber(value);
-  return isNaN(num) ? "0" : num.toFixed(decimals);
-};
+import { safeNumber, safeToFixed } from "@/lib/utils";
 
 export default function ReportPage() {
   const router = useRouter();

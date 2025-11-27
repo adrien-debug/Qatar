@@ -26,6 +26,7 @@ export default function Navigation() {
   const navItems = [
     { href: "/", label: "Overview" },
     { href: "/projection", label: "Projection" },
+    { href: "/setup", label: "Setup" },
   ];
 
   // Ne pas afficher la navigation sur la page de login
@@ -70,5 +71,3 @@ export default function Navigation() {
     </nav>
   );
 }
-
-

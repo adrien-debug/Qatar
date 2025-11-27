@@ -12,6 +12,7 @@ import {
 } from "@/lib/google-sheets-loader";
 import { defaultHardwareCosts, defaultPhases } from "@/lib/financial-calculations";
 import { RefreshCw, CheckCircle, AlertCircle, Loader2, FileSpreadsheet } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 interface GoogleSheetsLoaderProps {
   onConfigLoaded?: (config: DealSpreadsheetConfig) => void;
@@ -108,15 +109,6 @@ export default function GoogleSheetsLoader({
     }
   }, []);
 
-  const formatCurrency = (value: number | undefined | null): string => {
-    if (!value || isNaN(value)) return "$0";
-    if (Math.abs(value) >= 1000000) {
-      return `$${(value / 1000000).toFixed(2)}M`;
-    } else if (Math.abs(value) >= 1000) {
-      return `$${(value / 1000).toFixed(2)}K`;
-    }
-    return `$${value.toFixed(2)}`;
-  };
 
   const formatPercent = (value: number | undefined | null): string => {
     if (!value || isNaN(value)) return "0%";

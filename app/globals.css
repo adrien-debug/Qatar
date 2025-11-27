@@ -6,18 +6,12 @@
 
 :root {
   /* Couleur principale HEARST (Signature) - Vert néon doux */
-  --primary-green: #7CFF5A;
-  --accent-primary: #7CFF5A;
   --hearst-primary: #7CFF5A;
-  --accent-primary-dark: #6ae048;
-  --accent-primary-light: #8eff6c;
   --hearst-primary-dark: #6ae048;
   --hearst-primary-light: #8eff6c;
   
   /* Backgrounds - Dark Mode Premium */
-  --primary-dark: #050607;
   --bg-primary: #050607;
-  --primary-grey: #111315;
   --bg-secondary: #111315;
   --bg-tertiary: #15181d;
   --bg-hover: #1a1d22;
@@ -57,12 +51,10 @@
   /* Aliases pour compatibilité */
   --hearst-green: #7CFF5A;
   --hearst-dark: #050607;
-  --hearst-light: #050607;
   --hearst-text: #ffffff;
   --hearst-white: #ffffff;
   
   /* Couleur Qatar */
-  --qatar-red: #E6396F;
   --qatar-primary: #E6396F;
 }
 
@@ -77,7 +69,7 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: var(--primary-dark);
+  background-color: var(--bg-primary);
   background-image: 
     radial-gradient(circle at 20% 50%, rgba(124, 255, 90, 0.03) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(124, 255, 90, 0.02) 0%, transparent 50%),
@@ -236,32 +228,32 @@ a {
   
   /* Couleur Qatar (rouge bordeaux - plus voyant) */
   .text-qatar-red {
-    color: #E6396F !important;
+    color: var(--qatar-primary) !important;
   }
   
   .bg-qatar-red {
-    background-color: #E6396F !important;
+    background-color: var(--qatar-primary) !important;
   }
   
   .border-qatar-red {
-    border-color: #E6396F !important;
+    border-color: var(--qatar-primary) !important;
   }
   
   /* Bordures avec opacité pour Qatar */
   .border-qatar-red\/20 {
-    border-color: rgba(230, 57, 111, 0.2) !important;
+    border-color: color-mix(in srgb, var(--qatar-primary) 20%, transparent) !important;
   }
   
   .border-qatar-red\/40 {
-    border-color: rgba(230, 57, 111, 0.4) !important;
+    border-color: color-mix(in srgb, var(--qatar-primary) 40%, transparent) !important;
   }
   
   .bg-qatar-red\/10 {
-    background-color: rgba(230, 57, 111, 0.1) !important;
+    background-color: color-mix(in srgb, var(--qatar-primary) 10%, transparent) !important;
   }
   
   .bg-qatar-red\/20 {
-    background-color: rgba(230, 57, 111, 0.2) !important;
+    background-color: color-mix(in srgb, var(--qatar-primary) 20%, transparent) !important;
   }
   
   /* Input range (slider) en vert HEARST - Premium Aligné */

@@ -1,10 +1,6 @@
 import { Activity } from "lucide-react";
 import { Scenario } from "./ScenarioManager";
-
-const safeToFixed = (value: number | undefined | null, decimals: number): string => {
-  if (value === undefined || value === null || isNaN(value)) return "0";
-  return value.toFixed(decimals);
-};
+import { safeToFixed } from "@/lib/utils";
 
 interface ReportParamsProps {
   activeScenario: Scenario | null;
