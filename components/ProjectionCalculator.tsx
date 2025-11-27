@@ -1512,7 +1512,7 @@ export default function ProjectionCalculator() {
                         Explication
                       </h4>
                       <p className="text-hearst-text-secondary leading-relaxed text-lg">
-                        Les revenus annuels nets représentent le revenu total généré sur une année, après déduction des coûts opérationnels. Cette métrique reflète la performance financière réelle du projet de mining Bitcoin et permet d'évaluer la viabilité économique à long terme.
+                        Les revenus annuels nets représentent le revenu total généré sur une année, après déduction des coûts opérationnels. Cette métrique reflète la performance financière réelle du projet de mining Bitcoin et permet d&apos;évaluer la viabilité économique à long terme.
                       </p>
                     </div>
                   </div>
@@ -1553,7 +1553,7 @@ export default function ProjectionCalculator() {
                         Explication
                       </h4>
                       <p className="text-hearst-text-secondary leading-relaxed text-lg">
-                        Le profit net annuel représente le bénéfice réel après déduction de tous les coûts, incluant les coûts d'infrastructure, d'exploitation et de maintenance. C'est la métrique clé pour évaluer la rentabilité du projet.
+                        Le profit net annuel représente le bénéfice réel après déduction de tous les coûts, incluant les coûts d&apos;infrastructure, d&apos;exploitation et de maintenance. C&apos;est la métrique clé pour évaluer la rentabilité du projet.
                       </p>
                     </div>
                   </div>
@@ -1593,7 +1593,7 @@ export default function ProjectionCalculator() {
                         Explication
                       </h4>
                       <p className="text-hearst-text-secondary leading-relaxed text-lg">
-                        Le ROI (Return on Investment) représente le retour sur investissement, calculé sur la base des coûts de déploiement OPEX sur 3 mois. Cette métrique permet d'évaluer l'efficacité de l'investissement initial.
+                        Le ROI (Return on Investment) représente le retour sur investissement, calculé sur la base des coûts de déploiement OPEX sur 3 mois. Cette métrique permet d&apos;évaluer l&apos;efficacité de l&apos;investissement initial.
                       </p>
                     </div>
                   </div>
@@ -1633,7 +1633,7 @@ export default function ProjectionCalculator() {
                         Explication
                       </h4>
                       <p className="text-hearst-text-secondary leading-relaxed text-lg">
-                        Le coût par BTC représente le coût total d'investissement divisé par le nombre de BTC minés, donnant le coût unitaire de production d'un Bitcoin. Cette métrique est essentielle pour évaluer la compétitivité du projet.
+                        Le coût par BTC représente le coût total d&apos;investissement divisé par le nombre de BTC minés, donnant le coût unitaire de production d&apos;un Bitcoin. Cette métrique est essentielle pour évaluer la compétitivité du projet.
                       </p>
                     </div>
                   </div>
@@ -1673,7 +1673,7 @@ export default function ProjectionCalculator() {
                         Explication
                       </h4>
                       <p className="text-hearst-text-secondary leading-relaxed text-lg">
-                        La marge sur le hardware représente la différence entre le prix de vente et le coût d'achat du matériel minier, incluant l'infrastructure, le refroidissement et le réseau. Cette marge reflète la valeur ajoutée de HEARST dans le projet.
+                        La marge sur le hardware représente la différence entre le prix de vente et le coût d&apos;achat du matériel minier, incluant l&apos;infrastructure, le refroidissement et le réseau. Cette marge reflète la valeur ajoutée de HEARST dans le projet.
                       </p>
                     </div>
                   </div>
@@ -1713,7 +1713,7 @@ export default function ProjectionCalculator() {
                         Explication
                       </h4>
                       <p className="text-hearst-text-secondary leading-relaxed text-lg">
-                        La part d'électricité représente le coût total de l'électricité consommée par le matériel minier sur la durée de vie du projet. Cette métrique est cruciale pour évaluer les coûts opérationnels à long terme.
+                        La part d&apos;électricité représente le coût total de l&apos;électricité consommée par le matériel minier sur la durée de vie du projet. Cette métrique est cruciale pour évaluer les coûts opérationnels à long terme.
                       </p>
                     </div>
                   </div>
