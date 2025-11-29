@@ -170,9 +170,9 @@ function ScenarioTable({
   ];
 
   return (
-    <Card variant="dark" className={`mb-8 ${isActive ? 'border-2 border-hearst-green' : ''}`}>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4 flex-1">
+    <Card variant="dark" className={`mb-10 shadow-xl ${isActive ? 'border-2 border-hearst-green/60 bg-gradient-to-br from-hearst-green/10 to-hearst-green/5' : 'border-2 border-hearst-grey-100/20'}`}>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-5 flex-1">
           {isEditingName ? (
             <input
               type="text"
@@ -187,12 +187,12 @@ function ScenarioTable({
                   setIsEditingName(false);
                 }
               }}
-              className="text-2xl font-bold text-white bg-hearst-dark border border-hearst-green rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-hearst-green"
+              className="text-3xl font-bold text-white bg-hearst-dark border-2 border-hearst-green rounded-xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-hearst-green/50 shadow-lg"
               autoFocus
             />
           ) : (
             <h2 
-              className="text-2xl font-bold text-white cursor-pointer hover:text-hearst-green transition-colors"
+              className="text-3xl font-bold text-white cursor-pointer hover:text-hearst-green transition-colors tracking-tight"
               onClick={() => setIsEditingName(true)}
               title="Cliquez pour modifier le nom"
             >
@@ -200,38 +200,38 @@ function ScenarioTable({
             </h2>
           )}
           {isActive && (
-            <span className="px-3 py-1 bg-hearst-green/20 text-hearst-green rounded-full text-xs font-semibold border border-hearst-green/50">
+            <span className="px-6 py-3 bg-hearst-green/40 text-hearst-green rounded-full text-base font-bold border-2 border-hearst-green/60 shadow-lg">
               Scénario Actif
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {!isActive && (
             <button
               onClick={() => onSetActive(scenario.id)}
-              className="px-4 py-2 bg-hearst-green text-white rounded-lg font-semibold text-sm hover:bg-hearst-green/80 transition-all"
+              className="px-6 py-3 bg-gradient-to-r from-hearst-green to-hearst-green/90 text-white rounded-xl font-bold text-base hover:from-hearst-green/90 hover:to-hearst-green/80 transition-all shadow-lg shadow-hearst-green/30 hover:shadow-xl"
             >
               Activer
             </button>
           )}
           <button
             onClick={handleDelete}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold text-sm hover:bg-red-700 transition-all"
+            className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-bold text-base hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-600/30 hover:shadow-xl"
           >
             Supprimer
           </button>
         </div>
       </div>
       
-      <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+      <div className="overflow-x-auto max-h-[700px] overflow-y-auto rounded-xl border-2 border-hearst-grey-100/20">
         <table className="w-full border-collapse">
-          <thead className="sticky top-0 bg-hearst-dark z-10">
-            <tr className="border-b border-hearst-grey-100/30">
-              <th className="text-left py-4 px-4 text-white font-semibold">Label</th>
-              <th className="text-left py-4 px-4 text-white font-semibold">Chemin</th>
-              <th className="text-left py-4 px-4 text-white font-semibold">Valeur (éditable)</th>
-              <th className="text-left py-4 px-4 text-white font-semibold">Valeur formatée</th>
-              <th className="text-left py-4 px-4 text-white font-semibold">Card</th>
+          <thead className="sticky top-0 bg-gradient-to-r from-hearst-dark to-hearst-dark/95 z-10 shadow-lg">
+            <tr className="border-b-2 border-hearst-grey-100/30">
+              <th className="text-left py-6 px-6 text-white font-bold text-base uppercase tracking-wider">Label</th>
+              <th className="text-left py-6 px-6 text-white font-bold text-base uppercase tracking-wider">Chemin</th>
+              <th className="text-left py-6 px-6 text-white font-bold text-base uppercase tracking-wider">Valeur (éditable)</th>
+              <th className="text-left py-6 px-6 text-white font-bold text-base uppercase tracking-wider">Valeur formatée</th>
+              <th className="text-left py-6 px-6 text-white font-bold text-base uppercase tracking-wider">Card</th>
             </tr>
           </thead>
           <tbody>
@@ -246,12 +246,12 @@ function ScenarioTable({
                 : rawValue.toString();
               
               return (
-                <tr key={item.path} className="border-b border-hearst-grey-100/20 hover:bg-hearst-grey-100/10">
-                  <td className="py-4 px-4 text-white font-medium">{item.label}</td>
-                  <td className="py-4 px-4 text-hearst-text-secondary text-xs font-mono">
+                <tr key={item.path} className="border-b border-hearst-grey-100/20 hover:bg-hearst-grey-100/15 transition-colors">
+                  <td className="py-5 px-6 text-white font-semibold text-base">{item.label}</td>
+                  <td className="py-5 px-6 text-hearst-text-secondary text-sm font-mono bg-hearst-dark/30">
                     baseSetup.{item.path}
                   </td>
-                  <td className="py-4 px-4">
+                  <td className="py-5 px-6">
                     <input
                       type="text"
                       inputMode="decimal"
@@ -290,11 +290,11 @@ function ScenarioTable({
                           e.currentTarget.blur();
                         }
                       }}
-                      className="w-full px-3 py-2 bg-hearst-dark border border-hearst-grey-100/30 rounded text-white text-sm focus:border-hearst-green focus:outline-none"
-                      style={{ minWidth: '120px' }}
+                      className="w-full px-4 py-3 bg-hearst-dark border-2 border-hearst-grey-100/30 rounded-lg text-white text-base focus:border-hearst-green focus:outline-none focus:ring-2 focus:ring-hearst-green/50 transition-all shadow-md hover:shadow-lg"
+                      style={{ minWidth: '140px' }}
                     />
                   </td>
-                  <td className="py-4 px-4 text-white font-semibold">
+                  <td className="py-5 px-6 text-white font-bold text-base">
                     {(() => {
                       const numValue = parseFloat(inputValue);
                       if (!isNaN(numValue) && inputValue !== "" && inputValue !== "-") {
@@ -303,7 +303,7 @@ function ScenarioTable({
                       return item.formatter(rawValue);
                     })()}
                   </td>
-                  <td className="py-4 px-4 text-hearst-text-secondary">
+                  <td className="py-5 px-6 text-hearst-text-secondary font-medium text-base">
                     {item.currentCard}
                   </td>
                 </tr>
@@ -314,11 +314,12 @@ function ScenarioTable({
       </div>
       
       {hasChanges && (
-        <div className="mt-6 p-4 bg-hearst-green/20 border border-hearst-green/50 rounded-lg">
-          <p className="text-white text-sm font-semibold mb-2">
-            ✅ Modifications sauvegardées
+        <div className="mt-8 p-6 bg-gradient-to-r from-hearst-green/25 to-hearst-green/15 border-2 border-hearst-green/60 rounded-xl shadow-lg">
+          <p className="text-white text-lg font-bold mb-2 flex items-center gap-2">
+            <span className="text-2xl">✅</span>
+            Modifications sauvegardées
           </p>
-          <p className="text-hearst-text-secondary text-xs">
+          <p className="text-hearst-text-secondary text-base">
             Les valeurs modifiées sont sauvegardées automatiquement.
           </p>
         </div>
@@ -412,72 +413,72 @@ export default function SetupPage() {
     <div className="min-h-screen bg-hearst-dark">
       <Navigation />
       
-      <main className="pt-4 p-8 overflow-y-auto min-h-screen mx-[200px]">
-        <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
+      <main className="pt-8 p-12 overflow-y-auto min-h-screen mx-auto max-w-[1600px] px-12">
+        <div className="mb-12">
+          <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">
             Setup
           </h1>
-          <p className="text-hearst-text-secondary text-lg">
+          <p className="text-hearst-text-secondary text-xl font-medium">
             Gestion des Scénarios
           </p>
         </div>
 
         {/* Section Scénario de Base Toujours Actif */}
-        <Card variant="dark" className="mb-8 bg-gradient-to-br from-hearst-blue/20 to-hearst-blue/10 border-2 border-hearst-blue/50">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-3 h-3 bg-hearst-blue rounded-full"></div>
-              <h2 className="text-2xl font-bold text-white">
+        <Card variant="dark" className="mb-10 bg-gradient-to-br from-hearst-blue/25 to-hearst-blue/15 border-2 border-hearst-blue/60 shadow-2xl shadow-hearst-blue/20">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-5">
+              <div className="w-4 h-4 bg-hearst-blue rounded-full shadow-lg shadow-hearst-blue/50"></div>
+              <h2 className="text-3xl font-bold text-white tracking-tight">
                 Scénario de Base (Toujours Actif)
               </h2>
             </div>
-            <span className="px-4 py-2 bg-hearst-blue/30 text-hearst-blue rounded-full text-sm font-semibold border border-hearst-blue/50">
+            <span className="px-6 py-3 bg-hearst-blue/40 text-hearst-blue rounded-full text-base font-bold border-2 border-hearst-blue/60 shadow-lg">
               Toujours Actif
             </span>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Total Power MW */}
-            <div className="p-4 bg-hearst-dark/50 rounded-lg border border-hearst-blue/30">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-hearst-text-secondary text-sm uppercase tracking-wide">
+            <div className="p-8 bg-gradient-to-br from-hearst-dark/70 to-hearst-dark/50 rounded-xl border-2 border-hearst-blue/40 shadow-lg hover:shadow-xl hover:border-hearst-blue/60 transition-all duration-300">
+              <div className="flex flex-col mb-4">
+                <span className="text-hearst-text-secondary text-sm uppercase tracking-wider font-semibold mb-3">
                   Total Power
                 </span>
-                <span className="text-2xl font-bold text-hearst-blue">
+                <span className="text-4xl font-bold text-hearst-blue mb-2">
                   {setup.projectData.totalPowerMw} MW
                 </span>
               </div>
-              <p className="text-hearst-text-secondary text-xs mt-2">
+              <p className="text-hearst-text-secondary text-sm mt-4 pt-4 border-t border-hearst-blue/20">
                 Valeur fixe : 200 MW
               </p>
             </div>
             
             {/* Share SPV */}
-            <div className="p-4 bg-hearst-dark/50 rounded-lg border border-hearst-blue/30">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-hearst-text-secondary text-sm uppercase tracking-wide">
+            <div className="p-8 bg-gradient-to-br from-hearst-dark/70 to-hearst-dark/50 rounded-xl border-2 border-hearst-blue/40 shadow-lg hover:shadow-xl hover:border-hearst-blue/60 transition-all duration-300">
+              <div className="flex flex-col mb-4">
+                <span className="text-hearst-text-secondary text-sm uppercase tracking-wider font-semibold mb-3">
                   Share SPV
                 </span>
-                <span className="text-2xl font-bold text-hearst-blue">
+                <span className="text-4xl font-bold text-hearst-blue mb-2">
                   {setup.parameters.shareSpvPercent}%
                 </span>
               </div>
-              <p className="text-hearst-text-secondary text-xs mt-2">
+              <p className="text-hearst-text-secondary text-sm mt-4 pt-4 border-t border-hearst-blue/20">
                 Modifiable depuis la page <strong className="text-white">Projection</strong> via les sliders
               </p>
             </div>
             
             {/* Share Electricity */}
-            <div className="p-4 bg-hearst-dark/50 rounded-lg border border-hearst-blue/30">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-hearst-text-secondary text-sm uppercase tracking-wide">
+            <div className="p-8 bg-gradient-to-br from-hearst-dark/70 to-hearst-dark/50 rounded-xl border-2 border-hearst-blue/40 shadow-lg hover:shadow-xl hover:border-hearst-blue/60 transition-all duration-300">
+              <div className="flex flex-col mb-4">
+                <span className="text-hearst-text-secondary text-sm uppercase tracking-wider font-semibold mb-3">
                   Share Electricity
                 </span>
-                <span className="text-2xl font-bold text-hearst-blue">
+                <span className="text-4xl font-bold text-hearst-blue mb-2">
                   {setup.parameters.shareElectricityPercent}%
                 </span>
               </div>
-              <p className="text-hearst-text-secondary text-xs mt-2">
+              <p className="text-hearst-text-secondary text-sm mt-4 pt-4 border-t border-hearst-blue/20">
                 Modifiable depuis la page <strong className="text-white">Projection</strong> via les sliders
               </p>
             </div>
@@ -488,20 +489,20 @@ export default function SetupPage() {
         {activeSubScenarioId && (() => {
           const activeSubScenario = getScenarioById(activeSubScenarioId);
           return activeSubScenario ? (
-            <Card variant="dark" className="mb-8 bg-gradient-to-br from-hearst-green/20 to-hearst-green/10 border-2 border-hearst-green/50">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-3 h-3 bg-hearst-green rounded-full animate-pulse"></div>
-                  <h2 className="text-2xl font-bold text-white">
+            <Card variant="dark" className="mb-10 bg-gradient-to-br from-hearst-green/25 to-hearst-green/15 border-2 border-hearst-green/60 shadow-2xl shadow-hearst-green/20">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-5">
+                  <div className="w-4 h-4 bg-hearst-green rounded-full animate-pulse shadow-lg shadow-hearst-green/50"></div>
+                  <h2 className="text-3xl font-bold text-white tracking-tight">
                     Sous-Scénario Sélectionné : {activeSubScenario.name}
                   </h2>
                 </div>
-                <span className="px-4 py-2 bg-hearst-green/30 text-hearst-green rounded-full text-sm font-semibold border border-hearst-green/50">
+                <span className="px-6 py-3 bg-hearst-green/40 text-hearst-green rounded-full text-base font-bold border-2 border-hearst-green/60 shadow-lg">
                   Utilisé dans Projection
                 </span>
               </div>
               
-              <p className="text-hearst-text-secondary text-sm mb-4">
+              <p className="text-hearst-text-secondary text-base mb-6 leading-relaxed">
                 Ce sous-scénario contient les données des tableaux éditables ci-dessous. 
                 Les valeurs sont fusionnées avec le scénario de base (200 MW, SPV, Electricity).
               </p>
@@ -510,41 +511,41 @@ export default function SetupPage() {
         })()}
 
         {/* Card informative */}
-        <Card variant="dark" className="mb-8 bg-gradient-to-br from-hearst-green/10 to-hearst-green/5 border-2 border-hearst-green/30">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-12 h-12 bg-hearst-green/20 rounded-lg flex items-center justify-center border border-hearst-green/50">
-              <svg className="w-6 h-6 text-hearst-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <Card variant="dark" className="mb-10 bg-gradient-to-br from-hearst-green/15 to-hearst-green/8 border-2 border-hearst-green/40 shadow-xl">
+          <div className="flex items-start gap-6">
+            <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-hearst-green/30 to-hearst-green/20 rounded-xl flex items-center justify-center border-2 border-hearst-green/50 shadow-lg">
+              <svg className="w-8 h-8 text-hearst-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-bold text-white mb-2">📝 Gestion des Scénarios</h3>
-              <p className="text-hearst-text-secondary text-sm leading-relaxed mb-3">
-                <strong className="text-white">Créez et gérez plusieurs scénarios de configuration.</strong>
+              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">📝 Gestion des Scénarios</h3>
+              <p className="text-hearst-text-secondary text-base leading-relaxed mb-4">
+                <strong className="text-white font-semibold">Créez et gérez plusieurs scénarios de configuration.</strong>
                 <br />
                 Chaque scénario contient un tableau éditable avec toutes les valeurs. Le scénario actif est utilisé dans toute l&apos;application (y compris la page Projection).
               </p>
-              <p className="text-hearst-text-secondary text-sm leading-relaxed">
-                <strong className="text-white">Actions :</strong> Cliquez sur le nom d&apos;un scénario pour le modifier, utilisez &quot;Activer&quot; pour le rendre actif, ou &quot;Supprimer&quot; pour le supprimer.
+              <p className="text-hearst-text-secondary text-base leading-relaxed">
+                <strong className="text-white font-semibold">Actions :</strong> Cliquez sur le nom d&apos;un scénario pour le modifier, utilisez &quot;Activer&quot; pour le rendre actif, ou &quot;Supprimer&quot; pour le supprimer.
               </p>
             </div>
           </div>
         </Card>
 
         {/* Bouton pour créer un nouveau scénario */}
-        <div className="mb-8">
+        <div className="mb-10">
           {!showNewScenarioForm ? (
             <button
               onClick={() => setShowNewScenarioForm(true)}
-              className="px-6 py-3 bg-hearst-green text-white rounded-lg font-semibold text-base hover:bg-hearst-green/80 transition-all flex items-center gap-2"
+              className="px-8 py-4 bg-gradient-to-r from-hearst-green to-hearst-green/90 text-white rounded-xl font-bold text-lg hover:from-hearst-green/90 hover:to-hearst-green/80 transition-all duration-300 flex items-center gap-3 shadow-lg shadow-hearst-green/30 hover:shadow-xl hover:shadow-hearst-green/40 transform hover:scale-105"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
               Créer un Nouveau Scénario
             </button>
           ) : (
-            <Card variant="dark" className="mb-4">
+            <Card variant="dark" className="mb-6 shadow-xl">
               <div className="flex items-center gap-4">
                 <input
                   type="text"
@@ -559,12 +560,12 @@ export default function SetupPage() {
                     }
                   }}
                   placeholder="Nom du scénario (ex: Base Case, Optimiste, Pessimiste...)"
-                  className="flex-1 px-4 py-2 bg-hearst-dark border border-hearst-grey-100/30 rounded text-white focus:border-hearst-green focus:outline-none"
+                  className="flex-1 px-6 py-4 bg-hearst-dark border-2 border-hearst-grey-100/30 rounded-xl text-white text-lg focus:border-hearst-green focus:outline-none focus:ring-2 focus:ring-hearst-green/50 transition-all"
                   autoFocus
                 />
                 <button
                   onClick={handleCreateScenario}
-                  className="px-4 py-2 bg-hearst-green text-white rounded-lg font-semibold text-sm hover:bg-hearst-green/80 transition-all"
+                  className="px-6 py-4 bg-gradient-to-r from-hearst-green to-hearst-green/90 text-white rounded-xl font-bold text-base hover:from-hearst-green/90 hover:to-hearst-green/80 transition-all shadow-lg shadow-hearst-green/30 hover:shadow-xl"
                 >
                   Créer
                 </button>
@@ -573,7 +574,7 @@ export default function SetupPage() {
                     setShowNewScenarioForm(false);
                     setNewScenarioName("");
                   }}
-                  className="px-4 py-2 bg-hearst-grey-200 text-white rounded-lg font-semibold text-sm hover:bg-hearst-grey-100 transition-all"
+                  className="px-6 py-4 bg-hearst-grey-200 text-white rounded-xl font-bold text-base hover:bg-hearst-grey-100 transition-all shadow-lg"
                 >
                   Annuler
                 </button>
@@ -584,12 +585,12 @@ export default function SetupPage() {
 
         {/* Liste des scénarios */}
         {scenarios.length === 0 ? (
-          <Card variant="dark" className="mb-8">
-            <div className="text-center py-12">
-              <p className="text-hearst-text-secondary text-lg mb-4">
+          <Card variant="dark" className="mb-10 shadow-xl">
+            <div className="text-center py-16">
+              <p className="text-hearst-text-secondary text-xl mb-4 font-medium">
                 Aucun scénario créé pour le moment.
               </p>
-              <p className="text-hearst-text-secondary text-sm">
+              <p className="text-hearst-text-secondary text-base">
                 Cliquez sur &quot;Créer un Nouveau Scénario&quot; pour commencer.
               </p>
             </div>

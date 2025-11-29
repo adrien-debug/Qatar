@@ -139,3 +139,4 @@ npx tsc --noEmit
 
 Choisissez l'option 1 (Vercel CLI) pour un déploiement rapide, ou l'option 2 (GitHub) pour un workflow avec version control.
 
+

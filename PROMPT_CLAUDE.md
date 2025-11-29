@@ -174,3 +174,5 @@ Après implémentation, vérifier que :
 - Les montants sont positifs ou négatifs selon la logique métier
 - Le format d'affichage est correct (M$ pour millions, % pour pourcentages)
 
+
+

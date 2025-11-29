@@ -48,3 +48,5 @@
 - **Mapping** : `app/setup/page.tsx` → Modifier `setupCardsConfig` pour changer les labels ou l'ordre
 - **Formatage** : `app/setup/page.tsx` → Modifier les fonctions `formatUSD`, `formatPercent`, etc.
 
+
+

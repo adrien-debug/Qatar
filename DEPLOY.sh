@@ -86,3 +86,4 @@ echo ""
 echo "💡 Si Vercel est configuré, le déploiement devrait démarrer automatiquement"
 echo ""
 
+

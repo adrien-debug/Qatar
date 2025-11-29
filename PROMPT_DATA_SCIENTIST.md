@@ -201,3 +201,5 @@ Pour chaque donnée identifiée, fournis :
 
 Scanne maintenant **TOUT le code** et identifie **TOUTES les données** nécessaires. Commence par lister toutes les données trouvées, puis modifie les fichiers nécessaires pour les intégrer dans la page Data Menu.
 
+
+

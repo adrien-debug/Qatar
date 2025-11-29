@@ -543,3 +543,5 @@ Margin = hearstMarginOnHardwareYearly (revenu supplémentaire)
 
 **Fin du Rapport**
 
+
+
